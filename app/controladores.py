@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from extensions import db, bcrypt, login_manager
 from models import Usuario, Producto, Trabajo
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from config import Config
 
@@ -101,12 +101,43 @@ def logout():
 def dashboard():
     if current_user.rol != 'admin':
         abort(403)
+
     stats = {
         'usuarios': Usuario.query.count(),
         'productos': Producto.query.count(),
         'trabajos': Trabajo.query.count()
     }
-    return render_template('admin/dashboard_admin.html', usuario=current_user, stats=stats)
+
+    # Conteo por rol de usuario
+    roles = ['admin', 'mecanico', 'usuario']
+    conteo_roles = [Usuario.query.filter_by(rol=rol).count() for rol in roles]
+
+    # Conteo de productos por categorías simuladas (mejor si tu modelo tiene campo categoria)
+    categorias = ['Llantas', 'Aceites', 'Herramientas']
+    conteo_categorias = [Producto.query.filter(Producto.nombre.ilike('%llanta%')).count(),
+                         Producto.query.filter(Producto.nombre.ilike('%aceite%')).count(),
+                         Producto.query.filter(Producto.nombre.ilike('%herramienta%')).count()]
+
+    # Conteo de trabajos por día (últimos 5 días)
+    hoy = datetime.now().date()
+    fechas = [(hoy - timedelta(days=i)) for i in reversed(range(5))]
+    labels_fechas = [fecha.strftime('%d/%m') for fecha in fechas]
+    conteo_trabajos = [
+        Trabajo.query.filter(db.func.date(Trabajo.fecha_creacion) == fecha).count()
+        for fecha in fechas
+    ]
+
+    return render_template(
+        'admin/dashboard_admin.html',
+        usuario=current_user,
+        stats=stats,
+        roles=roles,
+        conteo_roles=conteo_roles,
+        categorias=categorias,
+        conteo_categorias=conteo_categorias,
+        labels_fechas=labels_fechas,
+        conteo_trabajos=conteo_trabajos
+    )
 
 @admin_bp.route('/usuarios')
 @login_required
