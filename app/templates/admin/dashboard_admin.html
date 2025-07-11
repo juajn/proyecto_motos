@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Administrador</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.02);
+        }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .card-text {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h2 class="text-center mb-4">¡Bienvenido, {{ usuario.nombre }}!</h2>
+
+        <div class="row text-center">
+            <!-- Usuarios -->
+            <div class="col-md-4 mb-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                        <h5 class="card-title">Usuarios registrados</h5>
+                        <p class="card-text">{{ stats.usuarios }}</p>
+                        <a href="{{ url_for('admin.listar_usuarios') }}" class="btn btn-outline-primary mt-2">
+                            Ver usuarios
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos -->
+            <div class="col-md-4 mb-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <i class="fas fa-box-open fa-2x text-success mb-3"></i>
+                        <h5 class="card-title">Productos</h5>
+                        <p class="card-text">{{ stats.productos }}</p>
+                        <a href="{{ url_for('admin.listar_productos') }}" class="btn btn-outline-success mt-2">
+                            Ver productos
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trabajos -->
+            <div class="col-md-4 mb-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <i class="fas fa-tools fa-2x text-warning mb-3"></i>
+                        <h5 class="card-title">Trabajos</h5>
+                        <p class="card-text">{{ stats.trabajos }}</p>
+                        <a href="{{ url_for('admin.listar_trabajos') }}" class="btn btn-outline-warning mt-2">
+                            Ver trabajos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Trabajo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Crear Trabajo</h2>
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <input type="text" class="form-control" name="descripcion" required>
+        </div>
+        <div class="mb-3">
+            <label for="estado" class="form-label">Estado</label>
+            <select class="form-control" name="estado">
+                <option>Pendiente</option>
+                <option>En proceso</option>
+                <option>Terminado</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="mecanico_id" class="form-label">Mecánico</label>
+            <select class="form-control" name="mecanico_id">
+                {% for m in mecanicos %}
+                    <option value="{{ m.id }}">{{ m.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="cliente_id" class="form-label">Cliente</label>
+            <select class="form-control" name="cliente_id">
+                {% for c in clientes %}
+                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="foto" class="form-label">Foto</label>
+            <input type="file" class="form-control" name="foto">
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+</div>
+</body>
+</html>

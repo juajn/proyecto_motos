@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Trabajo - Mecánico</title>
+</head>
+<body>
+    <h2>Crear Nuevo Trabajo</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Descripción:</label>
+        <input type="text" name="descripcion" required><br>
+
+        <label>Cliente:</label>
+        <select name="cliente_id" required>
+            {% for cliente in clientes %}
+                <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Foto:</label>
+        <input type="file" name="foto"><br>
+
+        <button type="submit">Crear</button>
+    </form>
+</body>
+</html>

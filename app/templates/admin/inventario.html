@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Inventario</h2>
+        <ul>
+            {% for producto in productos %}
+                <li>{{ producto.nombre }} - Stock: {{ producto.stock if producto.stock else 'N/A' }}</li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('dashboard') }}">Volver al dashboard</a>
+    </div>
+</body>
+</html>
