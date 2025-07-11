@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Trabajos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="mb-4">Listado de Trabajos</h2>
+    <a href="{{ url_for('admin.crear_trabajo') }}" class="btn btn-success mb-3">Crear nuevo trabajo</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Mecánico</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trabajo in trabajos %}
+            <tr>
+                <td>{{ trabajo.id }}</td>
+                <td>{{ trabajo.descripcion }}</td>
+                <td>{{ trabajo.estado }}</td>
+                <td>{{ trabajo.mecanico_id }}</td>
+                <td>{{ trabajo.cliente_id }}</td>
+                <td>{{ trabajo.fecha_creacion.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <a href="{{ url_for('admin.editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <form method="post" action="{{ url_for('admin.eliminar_trabajo', id=trabajo.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="text-center mt-4">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> volver al Dashboard
+            </a>
+        </div>
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

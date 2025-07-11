@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Mecánico</title>
+</head>
+<body>
+    <h2>Bienvenido, {{ usuario.nombre }}</h2>
+    <a href="{{ url_for('mecanico.nuevo_trabajo') }}">Crear nuevo trabajo</a>
+    <h3>Trabajos asignados:</h3>
+    <ul>
+        {% for trabajo in trabajos %}
+            <li>{{ trabajo.descripcion }} - Estado: {{ trabajo.estado }}</li>
+        {% else %}
+            <li>No hay trabajos asignados aún.</li>
+        {% endfor %}
+    </ul>
+    <div class="text-center mt-4">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
+</body>
+</html>

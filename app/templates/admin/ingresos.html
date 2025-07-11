@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingresos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Ingresos Totales</h2>
+        <p>Total: ${{ total }}</p>
+        <a href="{{ url_for('dashboard') }}">Volver al dashboard</a>
+    </div>
+</body>
+</html>
