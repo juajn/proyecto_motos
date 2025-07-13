@@ -1,46 +1,97 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de Productos</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-</head>
-<body>
-    <div class="container mt-4">
-        <h2>Productos registrados</h2>
+{% extends 'base.html' %}
 
-        <table class="table table-bordered table-striped mt-3">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Imagen</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for producto in productos %}
-                <tr>
-                    <td>{{ producto.id }}</td>
-                    <td>{{ producto.nombre }}</td>
-                    <td>{{ producto.descripcion }}</td>
-                    <td>${{ producto.precio }}</td>
-                    <td>{{ producto.stock }}</td>
-                    <td>
-                        {% if producto.imagen %}
-                            <img src="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}" width="50" alt="Imagen">
-                        {% else %}
-                            <span>Sin imagen</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{% block title %}Lista de Productos{% endblock %}
 
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Volver al dashboard</a>
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Productos Registrados</h2>
+    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#formNuevoProducto">
+        <i class="fas fa-plus"></i> Nuevo Producto
+    </button>
+</div>
+
+<!-- Formulario nuevo producto -->
+<div id="formNuevoProducto" class="collapse mb-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Producto</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.crear_producto') }}" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" name="nombre" id="nombre" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="precio" class="form-label">Precio</label>
+                        <input type="number" name="precio" id="precio" step="0.01" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="stock" class="form-label">Stock</label>
+                        <input type="number" name="stock" id="stock" class="form-control" required>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea name="descripcion" id="descripcion" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="imagen" class="form-label">Imagen</label>
+                        <input type="file" name="imagen" id="imagen" class="form-control" accept="image/*" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Producto</button>
+            </form>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<!-- Tabla de productos -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Imagen</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.id }}</td>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.descripcion }}</td>
+                <td>${{ producto.precio }}</td>
+                <td>{{ producto.stock }}</td>
+                <td>
+                    {% if producto.foto %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" width="50" class="rounded">
+                    {% else %}
+                        <span class="text-muted">Sin imagen</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <a href="{{ url_for('admin.editar_producto', id=producto.id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <form action="{{ url_for('admin.eliminar_producto', id=producto.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este producto?');">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">
+    <i class="fas fa-arrow-left"></i> Volver al Dashboard
+</a>
+{% endblock %}

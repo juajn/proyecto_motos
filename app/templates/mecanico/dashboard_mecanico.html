@@ -1,24 +1,73 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard Mecánico</title>
-</head>
-<body>
-    <h2>Bienvenido, {{ usuario.nombre }}</h2>
-    <a href="{{ url_for('mecanico.nuevo_trabajo') }}">Crear nuevo trabajo</a>
-    <h3>Trabajos asignados:</h3>
-    <ul>
-        {% for trabajo in trabajos %}
-            <li>{{ trabajo.descripcion }} - Estado: {{ trabajo.estado }}</li>
-        {% else %}
-            <li>No hay trabajos asignados aún.</li>
-        {% endfor %}
-    </ul>
-    <div class="text-center mt-4">
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">
-                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-            </a>
+{% extends "base.html" %}
+
+{% block title %}Panel Mecánico{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Bienvenido, {{ usuario.nombre }}</h2>
+
+    <div class="text-end mb-4">
+        <a href="{{ url_for('mecanico.nuevo_trabajo') }}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i> Crear nuevo trabajo
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Trabajos asignados</h5>
         </div>
-</body>
-</html>
+        <div class="card-body p-0">
+            {% if trabajos %}
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th>Cliente</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trabajo in trabajos %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ trabajo.descripcion }}</td>
+                        <td>
+                            {% if trabajo.estado == 'pendiente' %}
+                                <span class="badge bg-warning text-dark">Pendiente</span>
+                            {% else %}
+                                <span class="badge bg-success">Completado</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ trabajo.cliente.nombre }}</td>
+                        <td>
+                            {% if trabajo.estado == 'pendiente' %}
+                            <form method="POST" action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}" class="d-inline">
+                                <input type="hidden" name="estado" value="completado">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fas fa-check-circle"></i> Marcar como completado
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}" class="d-inline">
+                                <input type="hidden" name="estado" value="pendiente">
+                                <button type="submit" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-undo"></i> Marcar como pendiente
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="p-4 text-center">
+                <p class="text-muted">No hay trabajos asignados aún.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

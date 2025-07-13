@@ -1,26 +1,52 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Nuevo Trabajo - Mecánico</title>
-</head>
-<body>
-    <h2>Crear Nuevo Trabajo</h2>
-    <form method="POST" enctype="multipart/form-data">
-        <label>Descripción:</label>
-        <input type="text" name="descripcion" required><br>
+{% extends "base.html" %}
 
-        <label>Cliente:</label>
-        <select name="cliente_id" required>
-            {% for cliente in clientes %}
-                <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
-            {% endfor %}
-        </select><br>
+{% block title %}Nuevo Trabajo{% endblock %}
 
-        <label>Foto:</label>
-        <input type="file" name="foto"><br>
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
 
-        <button type="submit">Crear</button>
-    </form>
-</body>
-</html>
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-tools me-2"></i> Crear Nuevo Trabajo</h4>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <input type="text" name="descripcion" class="form-control" id="descripcion" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cliente_id" class="form-label">Cliente</label>
+                            <select name="cliente_id" class="form-select" id="cliente_id" required>
+                                <option value="">Seleccione un cliente</option>
+                                {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="foto" class="form-label">Foto (opcional)</label>
+                            <input type="file" name="foto" class="form-control" id="foto">
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Guardar trabajo
+                            </button>
+                            <a href="{{ url_for('mecanico.dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
