@@ -1,34 +1,40 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Panel de Usuario</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h2>Bienvenido, {{ current_user.nombre }}</h2>
+{% extends 'base.html' %}
+{% block content %}
 
-        <h3>Productos disponibles:</h3>
-        <ul>
-            {% for producto in productos %}
-                <li>
-                    {{ producto.nombre }} - ${{ producto.precio }} <br>
-                    <img src="{{ url_for('static', filename='uploads/' + producto.foto) }}" width="100">
-                </li>
-            {% endfor %}
-        </ul>
+<div class="container py-5">
+    <h2 class="text-center mb-4">Bienvenido, {{ usuario.nombre }}</h2>
 
-        {% if trabajos %}
-            <h3>Mis trabajos:</h3>
-            <ul>
-                {% for t in trabajos %}
-                    <li>{{ t.descripcion }} - Estado: {{ t.estado }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+    <div class="row">
+        {% for producto in productos %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" class="card-img-top" alt="Producto">
+                <div class="card-body">
+                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <p class="card-text">{{ producto.descripcion }}</p>
+                    <p class="fw-bold">${{ producto.precio }}</p>
+                    <form method="POST" action="{{ url_for('usuario.agregar_carrito', producto_id=producto.id) }}">
+    <input type="number" name="cantidad" min="1" max="{{ producto.stock }}" value="1" class="form-control mb-2" required>
+    <button type="submit" class="btn btn-primary btn-sm">Agregar al carrito</button>
+</form>
 
-        <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-</body>
-</html>
+ 
+
+
+{% if trabajos %}
+<h3 class="mt-5">Mis trabajos:</h3>
+<ul class="list-group">
+    {% for t in trabajos %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ t.descripcion }}
+        <span class="badge bg-info">{{ t.estado }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

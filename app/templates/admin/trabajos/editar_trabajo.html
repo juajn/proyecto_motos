@@ -1,48 +1,65 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Editar Trabajo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Editar Trabajo{% endblock %}
+
+{% block content %}
 <div class="container mt-5">
-    <h2>Editar Trabajo</h2>
-    <form method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <input type="text" class="form-control" name="descripcion" value="{{ trabajo.descripcion }}" required>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0 text-white"><i class="fas fa-edit me-2"></i>Editar Trabajo</h4>
         </div>
-        <div class="mb-3">
-            <label for="estado" class="form-label">Estado</label>
-            <select class="form-control" name="estado">
-                <option {% if trabajo.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
-                <option {% if trabajo.estado == 'En proceso' %}selected{% endif %}>En proceso</option>
-                <option {% if trabajo.estado == 'Terminado' %}selected{% endif %}>Terminado</option>
-            </select>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <input type="text" class="form-control" name="descripcion" value="{{ trabajo.descripcion }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-control" name="estado">
+                        <option {% if trabajo.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option {% if trabajo.estado == 'En proceso' %}selected{% endif %}>En proceso</option>
+                        <option {% if trabajo.estado == 'Terminado' %}selected{% endif %}>Terminado</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="mecanico_id" class="form-label">Mecánico</label>
+                    <select class="form-control" name="mecanico_id">
+                        {% for m in mecanicos %}
+                            <option value="{{ m.id }}" {% if trabajo.mecanico_id == m.id %}selected{% endif %}>{{ m.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="cliente_id" class="form-label">Cliente</label>
+                    <select class="form-control" name="cliente_id">
+                        {% for c in clientes %}
+                            <option value="{{ c.id }}" {% if trabajo.cliente_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Foto actual</label><br>
+                    {% if trabajo.foto %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" width="80" class="rounded border">
+                    {% else %}
+                        <span class="text-muted">Sin imagen</span>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="foto" class="form-label">Nueva foto (opcional)</label>
+                    <input type="file" class="form-control" name="foto" accept="image/*">
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('admin.listar_trabajos') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary text-white">
+                        <i class="fas fa-save"></i> Actualizar
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="mb-3">
-            <label for="mecanico_id" class="form-label">Mecánico</label>
-            <select class="form-control" name="mecanico_id">
-                {% for m in mecanicos %}
-                    <option value="{{ m.id }}" {% if trabajo.mecanico_id == m.id %}selected{% endif %}>{{ m.nombre }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="cliente_id" class="form-label">Cliente</label>
-            <select class="form-control" name="cliente_id">
-                {% for c in clientes %}
-                    <option value="{{ c.id }}" {% if trabajo.cliente_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="foto" class="form-label">Nueva foto (opcional)</label>
-            <input type="file" class="form-control" name="foto">
-        </div>
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-    </form>
+    </div>
 </div>
-</body>
-</html>
+{% endblock %}

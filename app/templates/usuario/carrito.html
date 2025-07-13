@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">Mi Carrito</h2>
+
+    {% if carrito %}
+    <div class="row">
+        {% for item in carrito %}
+    <div class="card mb-3">
+        <div class="row g-0">
+            <div class="col-md-2">
+                <img src="{{ url_for('static', filename='uploads/' ~ item.foto) }}" class="img-fluid" alt="{{ item.nombre }}">
+            </div>
+            <div class="col-md-10">
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.nombre }}</h5>
+                    <p class="card-text">Precio unitario: ${{ item.precio }}</p>
+                    <p class="card-text">Cantidad: {{ item.cantidad }}</p>
+                    <p class="card-text">Subtotal: ${{ item.precio * item.cantidad }}</p>
+                    <form action="{{ url_for('usuario.eliminar_del_carrito', producto_id=item.id) }}" method="POST">
+                        <button class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+    </div>
+
+    <div class="text-end mt-4">
+        <h4 class="fw-bold">Total: ${{ total }}</h4>
+        <form action="{{ url_for('usuario.pagar') }}" method="POST">
+    <button class="btn btn-success btn-lg">Finalizar compra</button>
+</form>
+
+        <form action="{{ url_for('usuario.vaciar_carrito') }}" method="POST" class="d-inline ms-2">
+            <button class="btn btn-warning">Vaciar Carrito</button>
+        </form>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('usuario.dashboard') }}" class="btn btn-secondary">Volver a productos</a>
+    </div>
+
+    {% else %}
+    <div class="alert alert-info text-center">
+        El carrito está vacío. <a href="{{ url_for('usuario.dashboard') }}">Ir a productos</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

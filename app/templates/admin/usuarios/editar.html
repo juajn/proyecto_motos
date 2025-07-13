@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Editar Usuario</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.editar_usuario', id=usuario.id) }}">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" name="nombre" id="nombre" value="{{ usuario.nombre }}" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rol" class="form-label">Rol</label>
+                        <select name="rol" id="rol" class="form-select" required>
+                            <option value="admin" {% if usuario.rol == 'admin' %}selected{% endif %}>Administrador</option>
+                            <option value="mecanico" {% if usuario.rol == 'mecanico' %}selected{% endif %}>Mecánico</option>
+                            <option value="usuario" {% if usuario.rol == 'usuario' %}selected{% endif %}>Usuario</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.listar_usuarios') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

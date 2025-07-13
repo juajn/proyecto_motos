@@ -10,22 +10,8 @@ class Usuario(db.Model, UserMixin):
     rol = db.Column(db.String(20), nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     imagen = db.Column(db.String(200))
+
     
-    # Relación con trabajos como cliente
-    trabajos = db.relationship(
-        'Trabajo', 
-        foreign_keys='Trabajo.cliente_id', 
-        backref='cliente', 
-        lazy=True
-    )
-    
-    # Relación con trabajos como mecánico
-    trabajos_asignados = db.relationship(
-        'Trabajo', 
-        foreign_keys='Trabajo.mecanico_id', 
-        backref='mecanico', 
-        lazy=True
-    )
 
 class Producto(db.Model):
     __tablename__ = 'producto'
@@ -38,10 +24,15 @@ class Producto(db.Model):
 
 class Trabajo(db.Model):
     __tablename__ = 'trabajo'
+
     id = db.Column(db.Integer, primary_key=True)
-    descripcion = db.Column(db.Text, nullable=False)
-    estado = db.Column(db.String(50), nullable=False, default='pendiente')  # Columna añadida
-    foto = db.Column(db.String(200))
-    cliente_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    descripcion = db.Column(db.String(255), nullable=False)
+    estado = db.Column(db.String(50), nullable=False)
+    foto = db.Column(db.String(255))
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+
     mecanico_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
-    fecha_creacion = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+
+    mecanico = db.relationship('Usuario', foreign_keys=[mecanico_id], backref='trabajos_como_mecanico')
+    cliente = db.relationship('Usuario', foreign_keys=[cliente_id], backref='trabajos_como_cliente')

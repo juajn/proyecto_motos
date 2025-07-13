@@ -1,16 +1,67 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Trabajos</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-</head>
-<body>
-<div class="container mt-5">
-    <h2 class="mb-4">Listado de Trabajos</h2>
-    <a href="{{ url_for('admin.crear_trabajo') }}" class="btn btn-success mb-3">Crear nuevo trabajo</a>
-    <table class="table table-bordered">
-        <thead>
+{% extends 'base.html' %}
+
+{% block title %}Lista de Trabajos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Trabajos Registrados</h2>
+    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#formNuevoTrabajo">
+        <i class="fas fa-plus"></i> Nuevo Trabajo
+    </button>
+</div>
+
+<!-- Formulario nuevo trabajo -->
+<div id="formNuevoTrabajo" class="collapse mb-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Trabajo</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.crear_trabajo') }}" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <input type="text" name="descripcion" id="descripcion" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select name="estado" id="estado" class="form-control" required>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="En proceso">En proceso</option>
+                            <option value="Terminado">Terminado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="foto" class="form-label">Foto</label>
+                        <input type="file" name="foto" id="foto" class="form-control" accept="image/*">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="mecanico_id" class="form-label">Mecánico</label>
+                        <select name="mecanico_id" id="mecanico_id" class="form-control" required>
+                            {% for m in mecanicos %}
+                                <option value="{{ m.id }}">{{ m.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="cliente_id" class="form-label">Cliente</label>
+                        <select name="cliente_id" id="cliente_id" class="form-control" required>
+                            {% for c in clientes %}
+                                <option value="{{ c.id }}">{{ c.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Trabajo</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de trabajos -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
             <tr>
                 <th>ID</th>
                 <th>Descripción</th>
@@ -18,34 +69,35 @@
                 <th>Mecánico</th>
                 <th>Cliente</th>
                 <th>Fecha</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
-        {% for trabajo in trabajos %}
+            {% for trabajo in trabajos %}
             <tr>
                 <td>{{ trabajo.id }}</td>
                 <td>{{ trabajo.descripcion }}</td>
                 <td>{{ trabajo.estado }}</td>
-                <td>{{ trabajo.mecanico_id }}</td>
-                <td>{{ trabajo.cliente_id }}</td>
+                <td>{{ trabajo.mecanico.nombre if trabajo.mecanico else 'Sin asignar' }}</td>
+                <td>{{ trabajo.cliente.nombre if trabajo.cliente else 'Sin asignar' }}</td>
                 <td>{{ trabajo.fecha_creacion.strftime('%Y-%m-%d') }}</td>
-                <td>
-                    <a href="{{ url_for('admin.editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-warning">Editar</a>
-                    <form method="post" action="{{ url_for('admin.eliminar_trabajo', id=trabajo.id) }}" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                <td class="text-center">
+                    <a href="{{ url_for('admin.editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <form action="{{ url_for('admin.eliminar_trabajo', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este trabajo?');">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </button>
                     </form>
                 </td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
 </div>
-<div class="text-center mt-4">
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-danger">
-                <i class="fas fa-sign-out-alt"></i> volver al Dashboard
-            </a>
-        </div>
-<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
-</body>
-</html>
+
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">
+    <i class="fas fa-arrow-left"></i> Volver al Dashboard
+</a>
+{% endblock %}
