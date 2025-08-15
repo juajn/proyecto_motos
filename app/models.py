@@ -21,6 +21,7 @@ class Producto(db.Model):
     precio = db.Column(db.Float, nullable=False)
     foto = db.Column(db.String(200))
     stock = db.Column(db.Integer, nullable=False, default=0)
+    categoria = db.Column(db.String(100),nullable=False)
 
 class Trabajo(db.Model):
     __tablename__ = 'trabajo'
