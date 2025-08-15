@@ -31,7 +31,10 @@ class Trabajo(db.Model):
     estado = db.Column(db.String(50), nullable=False)
     foto = db.Column(db.String(255))
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
-
+    costo= db.Column(db.Float, nullable=True)
+    fecha_cancelacion = db.Column(db.DateTime, nullable=True)    
+    
+    
     mecanico_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     cliente_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
 

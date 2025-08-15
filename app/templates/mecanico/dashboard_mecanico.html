@@ -7,13 +7,13 @@
     <h2 class="text-center mb-4">Bienvenido, {{ usuario.nombre }}</h2>
 
     <div class="text-end mb-4">
-        <a href="{{ url_for('mecanico.nuevo_trabajo') }}" class="btn btn-success">
+        <a href="{{ url_for('mecanico.nuevo_trabajo') }}" class="btn btn-dark">
             <i class="fas fa-plus-circle me-2"></i> Crear nuevo trabajo
         </a>
     </div>
 
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-black text-white">
             <h5 class="mb-0">Trabajos asignados</h5>
         </div>
         <div class="card-body p-0">
@@ -23,9 +23,11 @@
                     <tr>
                         <th>#</th>
                         <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Foto</th>
+                        <th>Fecha de creación</th>
                         <th>Estado</th>
                         <th>Cliente</th>
-                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +35,29 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ trabajo.descripcion }}</td>
+                        <td>
+                            {% if trabajo.costo %}
+                                ${{ '%.2f'|format(trabajo.costo) }}
+                            {% else %}
+                                <span class="text-muted">No asignado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if trabajo.foto %}
+                                <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
+                                     alt="Foto trabajo" 
+                                     style="width: 80px; height: auto; border-radius: 8px;">
+                            {% else %}
+                                <span class="text-muted">Sin foto</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if trabajo.fecha_creacion %}
+                                {{ trabajo.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                            {% else %}
+                                <span class="text-muted">Sin fecha</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if trabajo.estado == 'pendiente' %}
                                 <span class="badge bg-warning text-dark">Pendiente</span>
@@ -43,19 +68,15 @@
                         <td>{{ trabajo.cliente.nombre }}</td>
                         <td>
                             {% if trabajo.estado == 'pendiente' %}
-                            <form method="POST" action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}" class="d-inline">
-                                <input type="hidden" name="estado" value="completado">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-check-circle"></i> Marcar como completado
-                                </button>
-                            </form>
+                                <form method="POST" 
+                                      action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}" 
+                                      class="d-inline">
+                                    <input type="hidden" name="estado" value="completado">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="fas fa-check-circle"></i> Completar
+                                    </button>
+                                </form>
                             {% else %}
-                            <form method="POST" action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}" class="d-inline">
-                                <input type="hidden" name="estado" value="pendiente">
-                                <button type="submit" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-undo"></i> Marcar como pendiente
-                                </button>
-                            </form>
                             {% endif %}
                         </td>
                     </tr>

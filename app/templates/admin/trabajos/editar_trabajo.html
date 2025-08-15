@@ -6,58 +6,96 @@
 <div class="container mt-5">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0 text-white"><i class="fas fa-edit me-2"></i>Editar Trabajo</h4>
+            <h4 class="mb-0"><i class="fas fa-edit me-2"></i> Editar Trabajo</h4>
         </div>
         <div class="card-body">
             <form method="post" enctype="multipart/form-data">
+
+                <!-- Descripción -->
                 <div class="mb-3">
                     <label for="descripcion" class="form-label">Descripción</label>
                     <input type="text" class="form-control" name="descripcion" value="{{ trabajo.descripcion }}" required>
                 </div>
+
+                <!-- Precio -->
+                <div class="mb-3">
+                    <label for="costo" class="form-label">Precio</label>
+                    <input type="number" step="0.01" min="0" class="form-control" name="costo" value="{{ trabajo.costo or '' }}">
+                </div>
+
+                <!-- Estado -->
                 <div class="mb-3">
                     <label for="estado" class="form-label">Estado</label>
-                    <select class="form-control" name="estado">
-                        <option {% if trabajo.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
-                        <option {% if trabajo.estado == 'En proceso' %}selected{% endif %}>En proceso</option>
-                        <option {% if trabajo.estado == 'Terminado' %}selected{% endif %}>Terminado</option>
+                    <select class="form-select" name="estado" required>
+                        <option value="pendiente" {% if trabajo.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="en proceso" {% if trabajo.estado == 'en proceso' %}selected{% endif %}>En proceso</option>
+                        <option value="completado" {% if trabajo.estado == 'completado' %}selected{% endif %}>Completado</option>
+                        <option value="pagado" {% if trabajo.estado == 'pago' %}selected{% endif %}>Pagado</option>
                     </select>
                 </div>
+
+                <!-- Mecánico -->
                 <div class="mb-3">
                     <label for="mecanico_id" class="form-label">Mecánico</label>
-                    <select class="form-control" name="mecanico_id">
+                    <select class="form-select" name="mecanico_id" required>
                         {% for m in mecanicos %}
                             <option value="{{ m.id }}" {% if trabajo.mecanico_id == m.id %}selected{% endif %}>{{ m.nombre }}</option>
                         {% endfor %}
                     </select>
                 </div>
+
+                <!-- Cliente -->
                 <div class="mb-3">
                     <label for="cliente_id" class="form-label">Cliente</label>
-                    <select class="form-control" name="cliente_id">
+                    <select class="form-select" name="cliente_id" required>
                         {% for c in clientes %}
                             <option value="{{ c.id }}" {% if trabajo.cliente_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
                         {% endfor %}
                     </select>
                 </div>
+
+                <!-- Fecha de creación -->
+                <div class="mb-3">
+                    <label class="form-label">Fecha de creación</label>
+                    <input type="text" class="form-control"
+                        value="{{ trabajo.fecha_creacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_creacion else 'Sin fecha' }}"
+                        disabled>
+                </div>
+
+                <!-- Fecha de pago -->
+                <div class="mb-3">
+                    <label class="form-label">Fecha de pago</label>
+                    <input type="text" class="form-control"
+                        value="{{ trabajo.fecha_cancelacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_cancelacion else 'Sin fecha' }}"
+                        disabled>
+                </div>
+
+                <!-- Foto actual -->
                 <div class="mb-3">
                     <label class="form-label">Foto actual</label><br>
                     {% if trabajo.foto %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" width="80" class="rounded border">
+                        <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" width="100" class="rounded border">
                     {% else %}
                         <span class="text-muted">Sin imagen</span>
                     {% endif %}
                 </div>
+
+                <!-- Subir nueva foto -->
                 <div class="mb-3">
                     <label for="foto" class="form-label">Nueva foto (opcional)</label>
                     <input type="file" class="form-control" name="foto" accept="image/*">
                 </div>
+
+                <!-- Botones -->
                 <div class="d-flex justify-content-between">
                     <a href="{{ url_for('admin.listar_trabajos') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary text-white">
+                    <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Actualizar
                     </button>
                 </div>
+
             </form>
         </div>
     </div>
