@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Usuarios Registrados</h2>
-    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#formNuevoUsuario">
+    <button class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#formNuevoUsuario">
         <i class="fas fa-user-plus"></i> Nuevo Usuario
     </button>
 </div>
@@ -13,7 +13,7 @@
 <!-- Formulario nuevo usuario -->
 <div id="formNuevoUsuario" class="collapse mb-5">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-dark text-white">
             <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Registrar Nuevo Usuario</h5>
         </div>
         <div class="card-body">
@@ -45,7 +45,7 @@
                         <input type="file" name="imagen" id="imagen" class="form-control" accept="image/*">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-dark">
                     <i class="fas fa-save"></i> Registrar Usuario
                 </button>
             </form>
@@ -81,7 +81,7 @@
                     {% endif %}
                 </td>
                 <td class="text-center">
-                    <a href="{{ url_for('admin.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-primary">
+                    <a href="{{ url_for('admin.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-dark">
                         <i class="fas fa-edit"></i> Editar
                     </a>
                     <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('¿Estás seguro de eliminar este usuario?');">

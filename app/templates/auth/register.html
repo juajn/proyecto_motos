@@ -16,17 +16,6 @@
                 </div>
                 <div class="card-body">
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                      {% if messages %}
-                        {% for category, message in messages %}
-                          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                          </div>
-                        {% endfor %}
-                      {% endif %}
-                    {% endwith %}
-
                     <form method="POST" action="{{ url_for('auth.registro') }}" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre completo</label>
@@ -47,8 +36,7 @@
                             <label for="rol" class="form-label">Rol</label>
                             <select class="form-select" name="rol" id="rol" required>
                                 <option value="">Seleccione un rol</option>
-                                <option value="admin">Administrador</option>
-                                <option value="mecanico">Mecánico</option>
+
                                 <option value="usuario">Usuario</option>
                             </select>
                         </div>
