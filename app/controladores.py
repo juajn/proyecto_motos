@@ -119,13 +119,14 @@ def dashboard():
     roles = ['admin', 'mecanico', 'usuario']
     conteo_roles = [Usuario.query.filter_by(rol=rol).count() for rol in roles]
 
-    # Conteo de productos por categorías simuladas
-    categorias = ['Llantas', 'Aceites', 'Herramientas']
-    conteo_categorias = [
-        Producto.query.filter(Producto.nombre.ilike('%llanta%')).count(),
-        Producto.query.filter(Producto.nombre.ilike('%aceite%')).count(),
-        Producto.query.filter(Producto.nombre.ilike('%herramienta%')).count()
-    ]
+    # Obtener categorías únicas desde la base de datos
+    categorias_db = db.session.query(Producto.categoria).distinct().all()
+    categorias = [c[0] for c in categorias_db if c[0]]
+
+    # Conteo de productos por categorías (según las categorías encontradas)
+    conteo_categorias = []
+    for cat in categorias:
+        conteo_categorias.append(Producto.query.filter(Producto.categoria == cat).count())
 
     # Conteo de trabajos por día (últimos 5 días)
     hoy = datetime.now().date()
@@ -136,6 +137,10 @@ def dashboard():
         for fecha in fechas
     ]
 
+    # Pasar también mecánicos y clientes para los modales
+    mecanicos = Usuario.query.filter_by(rol='mecanico').all()
+    clientes = Usuario.query.filter_by(rol='usuario').all()
+
     return render_template(
         'admin/dashboard_admin.html',
         usuario=current_user,
@@ -145,7 +150,9 @@ def dashboard():
         categorias=categorias,
         conteo_categorias=conteo_categorias,
         labels_fechas=labels_fechas,
-        conteo_trabajos=conteo_trabajos
+        conteo_trabajos=conteo_trabajos,
+        mecanicos=mecanicos,
+        clientes=clientes
     )
 
 # ------------------
@@ -283,6 +290,7 @@ def crear_trabajo():
         mecanico_id = request.form['mecanico_id']
         cliente_id = request.form['cliente_id']
         foto_file = request.files.get('foto')
+        costo = request.form.get('costo', type=float, default=0.0)
         nombre_foto = save_uploaded_file(foto_file)
 
         nuevo_trabajo = Trabajo(
@@ -291,6 +299,7 @@ def crear_trabajo():
             foto=nombre_foto,
             mecanico_id=mecanico_id,
             cliente_id=cliente_id,
+            costo=float(costo) if costo else None,
             fecha_creacion=datetime.now()
         )
         db.session.add(nuevo_trabajo)
@@ -316,8 +325,21 @@ def editar_trabajo(id):
         trabajo.mecanico_id = request.form['mecanico_id']
         trabajo.cliente_id = request.form['cliente_id']
 
+        # Actualizar costo
+        costo = request.form.get('costo')
+        trabajo.costo = float(costo) if costo else None
+
+        # Si el estado es "completado", registrar fecha de pago
+        if trabajo.estado == 'completado' and not trabajo.fecha_cancelacion:
+            trabajo.fecha_cancelacion = datetime.utcnow()
+
+        # Si el estado cambia a otro que no sea "completado", borrar fecha de pago
+        elif trabajo.estado != 'completado':
+            trabajo.fecha_cancelacion = None
+
+        # Subir nueva foto si se cargó
         foto_file = request.files.get('foto')
-        if foto_file:
+        if foto_file and foto_file.filename != '':
             trabajo.foto = save_uploaded_file(foto_file)
 
         db.session.commit()
@@ -326,7 +348,26 @@ def editar_trabajo(id):
 
     mecanicos = Usuario.query.filter_by(rol='mecanico').all()
     clientes = Usuario.query.filter_by(rol='usuario').all()
-    return render_template('admin/trabajos/editar_trabajo.html', trabajo=trabajo, mecanicos=mecanicos, clientes=clientes)
+
+    return render_template(
+        'admin/trabajos/editar_trabajo.html',
+        trabajo=trabajo,
+        mecanicos=mecanicos,
+        clientes=clientes
+    )
+    
+@admin_bp.route('/trabajos/pagado/<int:id>', methods=['POST'])
+@login_required
+def marcar_pagado(id):
+    if current_user.rol != 'admin':
+        abort(403)
+
+    trabajo = Trabajo.query.get_or_404(id)
+    trabajo.estado = 'Pagado'
+    trabajo.fecha_cancelacion = datetime.utcnow()  # Guarda fecha y hora actuales
+    db.session.commit()
+    flash('Trabajo marcado como pagado.', 'success')
+    return redirect(url_for('admin.listar_trabajos'))
 
 @admin_bp.route('/trabajos/eliminar/<int:id>', methods=['POST'])
 @login_required
@@ -348,8 +389,16 @@ def eliminar_trabajo(id):
 def dashboard():
     if current_user.rol != 'mecanico':
         abort(403)
+
+    
     trabajos = Trabajo.query.filter_by(mecanico_id=current_user.id).all()
-    return render_template('mecanico/dashboard_mecanico.html', usuario=current_user, trabajos=trabajos)
+
+    
+    return render_template(
+        'mecanico/dashboard_mecanico.html',
+        usuario=current_user,
+        trabajos=trabajos
+    )
 
 @mecanico_bp.route('/trabajos/nuevo', methods=['GET', 'POST'])
 @login_required
@@ -360,7 +409,9 @@ def nuevo_trabajo():
     if request.method == 'POST':
         descripcion = request.form['descripcion']
         cliente_id = request.form['cliente_id']
+        costo = request.form.get('costo')  # Nuevo campo
         foto_file = request.files.get('foto')
+
         nombre_foto = save_uploaded_file(foto_file)
 
         nuevo_trabajo = Trabajo(
@@ -369,6 +420,7 @@ def nuevo_trabajo():
             foto=nombre_foto,
             mecanico_id=current_user.id,
             cliente_id=cliente_id,
+            costo=float(costo),
             fecha_creacion=datetime.now()
         )
         db.session.add(nuevo_trabajo)
@@ -402,9 +454,39 @@ def cambiar_estado(id):
 def dashboard():
     if current_user.rol != 'usuario':
         abort(403)
+
+    q = request.args.get('q', '').strip()
+    categoria_id = request.args.get('categoria', '').strip()
+
+    # Consulta base
+    productos_query = Producto.query
+
+    # Filtrar por texto en nombre o descripción
+    if q:
+        productos_query = productos_query.filter(
+            (Producto.nombre.ilike(f"%{q}%")) |
+            (Producto.descripcion.ilike(f"%{q}%"))
+        )
+
+    # Filtrar por categoría si está seleccionada
+    if categoria_id:
+        productos_query = productos_query.filter(Producto.categoria == categoria_id)
+
+    productos = productos_query.all()
+
+    # Obtener categorías únicas de los productos
+    categorias = db.session.query(Producto.categoria).distinct().all()
+    categorias = [c[0] for c in categorias if c[0]]
+
     trabajos = Trabajo.query.filter_by(cliente_id=current_user.id).all()
-    productos = Producto.query.all()  
-    return render_template('usuario/dashboard_usuario.html', usuario=current_user, trabajos=trabajos, productos=productos)
+
+    return render_template(
+        'usuario/dashboard_usuario.html',
+        usuario=current_user,
+        trabajos=trabajos,
+        productos=productos,
+        categorias=categorias
+    )
 
 
 @usuario_bp.route('/carrito')
@@ -522,3 +604,11 @@ def compra_exitosa():
     flash("¡Compra realizada con éxito!", "success")
     return redirect(url_for('usuario.dashboard'))
 
+@usuario_bp.route('/ver_trabajos')
+@login_required
+def ver_trabajos():
+    if current_user.rol != 'usuario':
+        abort(403)
+
+    trabajos = Trabajo.query.filter_by(cliente_id=current_user.id).all()
+    return render_template('usuario/trabajos.html', trabajos=trabajos, usuario=current_user)

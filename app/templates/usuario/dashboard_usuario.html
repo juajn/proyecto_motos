@@ -1,40 +1,63 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="container py-5">
-    <h2 class="text-center mb-4">Bienvenido, {{ usuario.nombre }}</h2>
+<!-- Barra de navegación con búsqueda y filtro -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light rounded shadow-sm mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="{{ url_for('usuario.dashboard') }}">Mi Tienda</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <form class="d-flex ms-auto" method="GET" action="{{ url_for('usuario.dashboard') }}">
+        <!-- Filtro por categoría -->
+        <select name="categoria" class="form-select me-2 rounded-pill">
+          <option value="">Todas las categorías</option>
+          {% for cat in categorias %}
+            <option value="{{ cat }}" {% if request.args.get('categoria') == cat %}selected{% endif %}>
+              {{ cat }}
+            </option>
+          {% endfor %}
+        </select>
 
-    <div class="row">
-        {% for producto in productos %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" class="card-img-top" alt="Producto">
-                <div class="card-body">
-                    <h5 class="card-title">{{ producto.nombre }}</h5>
-                    <p class="card-text">{{ producto.descripcion }}</p>
-                    <p class="fw-bold">${{ producto.precio }}</p>
-                    <form method="POST" action="{{ url_for('usuario.agregar_carrito', producto_id=producto.id) }}">
-    <input type="number" name="cantidad" min="1" max="{{ producto.stock }}" value="1" class="form-control mb-2" required>
-    <button type="submit" class="btn btn-primary btn-sm">Agregar al carrito</button>
-</form>
+        <!-- Campo de búsqueda -->
+        <input class="form-control me-2 rounded-pill" type="search" name="q" 
+               placeholder="Buscar productos..." value="{{ request.args.get('q', '') }}">
 
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+        <button class="btn btn-dark rounded-pill" type="submit">Buscar</button>
+      </form>
     </div>
- 
+  </div>
+</nav>
 
+<div class="container py-4">
+  <h2 class="text-center mb-4">Bienvenido, {{ usuario.nombre }}</h2>
 
-{% if trabajos %}
-<h3 class="mt-5">Mis trabajos:</h3>
-<ul class="list-group">
-    {% for t in trabajos %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ t.descripcion }}
-        <span class="badge bg-info">{{ t.estado }}</span>
-    </li>
+  <!-- Lista de productos -->
+  <div class="row">
+    {% for producto in productos %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
+             class="card-img-top" alt="Producto">
+        <div class="card-body">
+          <h5 class="card-title">{{ producto.nombre }}</h5>
+          <p class="card-text">{{ producto.descripcion }}</p>
+          <p class="fw-bold">${{ producto.precio }}</p>
+          <form method="POST" action="{{ url_for('usuario.agregar_carrito', producto_id=producto.id) }}">
+            <input type="number" name="cantidad" min="1" max="{{ producto.stock }}" value="1" 
+                   class="form-control mb-2" required>
+            <button type="submit" class="btn btn-dark btn-sm rounded-pill">Agregar al carrito</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center">
+      <p class="text-muted">No se encontraron productos para tu búsqueda.</p>
+    </div>
     {% endfor %}
-</ul>
-{% endif %}
+  </div>
+
 {% endblock %}
