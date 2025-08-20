@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 import os
 from config import Config
 from flask import session
-import mercadopago
-
+#import mercadopago
+import stripe
 
 # Blueprints
 auth_bp = Blueprint('auth', __name__)
@@ -555,54 +555,54 @@ def comprar_carrito():
     flash("¡Compra realizada con éxito!", "success")
     return redirect(url_for('usuario.dashboard'))
 
-@usuario_bp.route('/pagar', methods=['POST'])
-@login_required
-def pagar():
-    carrito = session.get('carrito', [])
-    if not carrito:
-        flash("El carrito está vacío", "warning")
-        return redirect(url_for('usuario.ver_carrito'))
+#@usuario_bp.route('/pagar', methods=['POST'])
+#@login_required
+#def pagar():
+    #carrito = session.get('carrito', [])
+    #if not carrito:
+        #flash("El carrito está vacío", "warning")
+        #return redirect(url_for('usuario.ver_carrito'))
 
-    sdk = mercadopago.SDK(current_app.config['MERCADOPAGO_ACCESS_TOKEN'])
+    #sdk = mercadopago.SDK(current_app.config['MERCADOPAGO_ACCESS_TOKEN'])
 
-    items = []
-    for item in carrito:
-        cantidad = item.get('cantidad', 1)
-        items.append({
-            "title": item['nombre'],
-            "quantity": cantidad,
-            "unit_price": float(item['precio']),
-            "currency_id": "COP"
-        })
+    #items = []
+    #for item in carrito:
+        #cantidad = item.get('cantidad', 1)
+        #items.append({
+            #"title": item['nombre'],
+            #"quantity": cantidad,
+            #"unit_price": float(item['precio']),
+            #"currency_id": "COP"
+        #})
 
-    preference_data = {
-        "items": items,
-        "back_urls": {
-            "success": url_for('usuario.compra_exitosa', _external=True),
-            "failure": url_for('usuario.ver_carrito', _external=True),
-            "pending": url_for('usuario.ver_carrito', _external=True)
-        },
-        "auto_return": "approved"
-    }
+    #preference_data = {
+        #"items": items,
+        #"back_urls": {
+            #"success": url_for('usuario.compra_exitosa', _external=True),
+            #"failure": url_for('usuario.ver_carrito', _external=True),
+            #"pending": url_for('usuario.ver_carrito', _external=True)
+        #},
+        #"auto_return": "approved"
+    #}
 
-    preference_response = sdk.preference().create(preference_data)
-    print("Respuesta MercadoPago:", preference_response)
+    #preference_response = sdk.preference().create(preference_data)
+    #print("Respuesta MercadoPago:", preference_response)
 
-    preference = preference_response.get("response", {})
+    #preference = preference_response.get("response", {})
 
-    if 'init_point' not in preference:
-        flash("Error al generar la pasarela de pago", "danger")
-        return redirect(url_for('usuario.ver_carrito'))
+    #if 'init_point' not in preference:
+        #flash("Error al generar la pasarela de pago", "danger")
+        #return redirect(url_for('usuario.ver_carrito'))
 
-    return redirect(preference["init_point"])
+    #return redirect(preference["init_point"])
 
 
-@usuario_bp.route('/compra_exitosa')
-@login_required
-def compra_exitosa():
-    session.pop('carrito', None)
-    flash("¡Compra realizada con éxito!", "success")
-    return redirect(url_for('usuario.dashboard'))
+#@usuario_bp.route('/compra_exitosa')
+#@login_required
+#def compra_exitosa():
+    #session.pop('carrito', None)
+    #flash("¡Compra realizada con éxito!", "success")
+    #return redirect(url_for('usuario.dashboard'))
 
 @usuario_bp.route('/ver_trabajos')
 @login_required
@@ -612,3 +612,48 @@ def ver_trabajos():
 
     trabajos = Trabajo.query.filter_by(cliente_id=current_user.id).all()
     return render_template('usuario/trabajos.html', trabajos=trabajos, usuario=current_user)
+#-------------------
+# PAGO CON STRIPE
+#-------------------
+stripe.api_key = Config.STRIPE_SECRET_KEY
+@usuario_bp.route('/pagar', methods=['POST'])
+@login_required
+def pagar():
+    carrito = session.get('carrito', [])
+    if not carrito:
+        flash("El carrito está vacío", "warning")
+        return redirect(url_for('usuario.ver_carrito'))
+
+    # Construir la lista de productos en Stripe
+    line_items = []
+    for item in carrito:
+        line_items.append({
+            "price_data": {
+                "currency": "cop",
+                "product_data": {
+                    "name": item['nombre'],
+                },
+                "unit_amount": int(float(item['precio']) * 100),  # en centavos
+            },
+            "quantity": item['cantidad'],
+        })
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=line_items,
+            mode="payment",
+            success_url=url_for('usuario.compra_exitosa', _external=True),
+            cancel_url=url_for('usuario.ver_carrito', _external=True),
+        )
+        return redirect(checkout_session.url, code=303)
+
+    except Exception as e:
+        flash(f"Error al generar el pago: {str(e)}", "danger")
+        return redirect(url_for('usuario.ver_carrito'))
+@usuario_bp.route('/compra_exitosa')
+@login_required
+def compra_exitosa():
+    session.pop('carrito', None)
+    flash("¡Compra realizada con éxito vía Stripe!", "success")
+    return redirect(url_for('usuario.dashboard'))
