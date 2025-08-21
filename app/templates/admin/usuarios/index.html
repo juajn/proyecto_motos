@@ -3,100 +3,135 @@
 {% block title %}Lista de Usuarios{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Usuarios Registrados</h2>
-    <button class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#formNuevoUsuario">
-        <i class="fas fa-user-plus"></i> Nuevo Usuario
-    </button>
-</div>
+<div class="container mt-4">
 
-<!-- Formulario nuevo usuario -->
-<div id="formNuevoUsuario" class="collapse mb-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Registrar Nuevo Usuario</h5>
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">
+            <i class="fas fa-users me-2 text-primary"></i> Usuarios Registrados
+        </h2>
+        <button class="btn btn-dark shadow-sm rounded-pill" data-bs-toggle="collapse" data-bs-target="#formNuevoUsuario">
+            <i class="fas fa-user-plus me-2"></i> Nuevo Usuario
+        </button>
+    </div>
+
+    <!-- Formulario nuevo usuario -->
+    <div id="formNuevoUsuario" class="collapse mb-5">
+        <div class="card border-0 shadow-lg rounded-4">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #343a40, #212529);" >
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Registrar Nuevo Usuario</h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('auth.registro') }}" method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label fw-semibold">Nombre</label>
+                            <input type="text" name="nombre" id="nombre" class="form-control shadow-sm" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="correo" class="form-label fw-semibold">Correo</label>
+                            <input type="email" name="correo" id="correo" class="form-control shadow-sm" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="contraseña" class="form-label fw-semibold">Contraseña</label>
+                            <input type="password" name="contraseña" id="contraseña" class="form-control shadow-sm" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="rol" class="form-label fw-semibold">Rol</label>
+                            <select name="rol" id="rol" class="form-select shadow-sm" required>
+                                <option value="">Seleccione un rol</option>
+                                <option value="admin">Administrador</option>
+                                <option value="mecanico">Mecánico</option>
+                                <option value="usuario">Usuario</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="imagen" class="form-label fw-semibold">Foto de perfil</label>
+                            <input type="file" name="imagen" id="imagen" class="form-control shadow-sm" accept="image/*">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-dark px-4 rounded-pill shadow-sm">
+                        <i class="fas fa-save me-2"></i> Registrar Usuario
+                    </button>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <form action="{{ url_for('auth.registro') }}" method="POST" enctype="multipart/form-data">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="nombre" class="form-label">Nombre</label>
-                        <input type="text" name="nombre" id="nombre" class="form-control" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="correo" class="form-label">Correo</label>
-                        <input type="email" name="correo" id="correo" class="form-control" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="contraseña" class="form-label">Contraseña</label>
-                        <input type="password" name="contraseña" id="contraseña" class="form-control" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="rol" class="form-label">Rol</label>
-                        <select name="rol" id="rol" class="form-select" required>
-                            <option value="">Seleccione un rol</option>
-                            <option value="admin">Administrador</option>
-                            <option value="mecanico">Mecánico</option>
-                            <option value="usuario">Usuario</option>
-                        </select>
-                    </div>
-                    <div class="col-md-12 mb-3">
-                        <label for="imagen" class="form-label">Foto de perfil</label>
-                        <input type="file" name="imagen" id="imagen" class="form-control" accept="image/*">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-dark">
-                    <i class="fas fa-save"></i> Registrar Usuario
-                </button>
-            </form>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div class="card border-0 shadow-lg rounded-4">
+        <div class="card-header text-white" style="background: linear-gradient(135deg, #343a40, #212529);">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Lista de Usuarios</h5>
         </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead style="background: #f8f9fa;" class="fw-semibold">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                            <th>Imagen</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.id }}</td>
+                            <td>{{ usuario.nombre }}</td>
+                            <td>{{ usuario.correo }}</td>
+                            <td>
+                                {% if usuario.rol == "admin" %}
+                                    <span class="badge bg-primary">Administrador</span>
+                                {% elif usuario.rol == "mecanico" %}
+                                    <span class="badge bg-warning text-dark">Mecánico</span>
+                                {% else %}
+                                    <span class="badge bg-success">Usuario</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if usuario.imagen %}
+                                    <img src="{{ url_for('static', filename='uploads/' + usuario.imagen) }}" 
+                                         width="45" height="45" class="rounded-circle border shadow-sm" alt="Foto">
+                                {% else %}
+                                    <span class="text-muted">Sin foto</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('admin.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-dark rounded-pill shadow-sm me-1">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST" style="display:inline-block;" 
+                                      onsubmit="return confirm('¿Estás seguro de eliminar este usuario?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill shadow-sm">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón volver -->
+    <div class="mt-4">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary rounded-pill shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i> Volver al Dashboard
+        </a>
     </div>
 </div>
 
-<!-- Tabla de usuarios -->
-<div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Rol</th>
-                <th>Imagen</th>
-                <th class="text-center">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for usuario in usuarios %}
-            <tr>
-                <td>{{ usuario.id }}</td>
-                <td>{{ usuario.nombre }}</td>
-                <td>{{ usuario.correo }}</td>
-                <td>{{ usuario.rol }}</td>
-                <td>
-                    {% if usuario.imagen %}
-                        <img src="{{ url_for('static', filename='uploads/' + usuario.imagen) }}" width="40" height="40" class="rounded-circle" alt="Foto">
-                    {% else %}
-                        <span class="text-muted">Sin foto</span>
-                    {% endif %}
-                </td>
-                <td class="text-center">
-                    <a href="{{ url_for('admin.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-dark">
-                        <i class="fas fa-edit"></i> Editar
-                    </a>
-                    <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('¿Estás seguro de eliminar este usuario?');">
-                        <button type="submit" class="btn btn-sm btn-danger">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">
-    <i class="fas fa-arrow-left"></i> Volver al Dashboard
-</a>
+<style>
+    .table thead th {
+        border-bottom: 2px solid #dee2e6;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f1f3f5;
+    }
+</style>
 {% endblock %}

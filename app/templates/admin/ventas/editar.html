@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Venta{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+    <!-- ==================== HEADER ==================== -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">
+            <i class="fas fa-edit me-2"></i> Editar Venta #{{ venta.id }}
+        </h2>
+        <a href="{{ url_for('admin.ventas') }}" class="btn btn-secondary rounded-pill shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i> Volver a Ventas
+        </a>
+    </div>
+
+    <!-- ==================== FORMULARIO EDITAR ==================== -->
+    <div class="card shadow-lg rounded-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-pen me-2"></i> Modificar datos de la venta</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.editar_venta', venta_id=venta.id) }}">
+                <!-- Cliente -->
+                <div class="mb-3">
+                    <label for="cliente_id" class="form-label">Cliente</label>
+                    <select name="cliente_id" id="cliente_id" class="form-select" required>
+                        {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}" {% if cliente.id == venta.cliente_id %}selected{% endif %}>
+                                {{ cliente.nombre }} ({{ cliente.correo }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Vendedor -->
+                <div class="mb-3">
+                    <label for="vendedor_id" class="form-label">Vendedor</label>
+                    <select name="vendedor_id" id="vendedor_id" class="form-select" required>
+                        {% for vendedor in vendedores %}
+                            <option value="{{ vendedor.id }}" {% if vendedor.id == venta.vendedor_id %}selected{% endif %}>
+                                {{ vendedor.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Productos -->
+                <div class="mb-3">
+                    <label class="form-label">Productos</label>
+                    <div id="productos-container">
+                        {% for detalle in venta.detalles %}
+                        <div class="row mb-2 producto-row">
+                            <div class="col-md-5">
+                                <select name="productos[{{ loop.index0 }}][id]" class="form-select" required>
+                                    <option value="">Seleccione un producto</option>
+                                    {% for producto in productos %}
+                                        <option value="{{ producto.id }}" {% if producto.id == detalle.producto_id %}selected{% endif %}>
+                                            {{ producto.nombre }} - ${{ "%.2f"|format(producto.precio) }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="productos[{{ loop.index0 }}][cantidad]" class="form-control" min="1" value="{{ detalle.cantidad }}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="productos[{{ loop.index0 }}][precio_unitario]" class="form-control" step="0.01" value="{{ detalle.precio_unitario }}" required>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-center">
+                                <button type="button" class="btn btn-danger btn-sm eliminar-producto"><i class="fas fa-trash"> Eliminar</i></button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="agregar-producto" class="btn btn-outline-dark btn-sm mt-2">
+                        <i class="fas fa-plus"></i> Agregar producto
+                    </button>
+                </div>
+
+                <!-- Botón de guardado -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== JS PARA PRODUCTOS DINÁMICOS ==================== -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    let index = {{ venta.detalles|length }};
+    const container = document.getElementById("productos-container");
+    const btnAgregar = document.getElementById("agregar-producto");
+
+    btnAgregar.addEventListener("click", () => {
+        const row = document.querySelector(".producto-row").cloneNode(true);
+        row.querySelectorAll("select, input").forEach(input => {
+            const name = input.getAttribute("name");
+            if (name) input.setAttribute("name", name.replace(/\[\d+\]/, `[${index}]`));
+            if (input.tagName === "INPUT") input.value = "";
+            if (input.tagName === "SELECT") input.selectedIndex = 0;
+        });
+        row.querySelector(".eliminar-producto").addEventListener("click", () => row.remove());
+        container.appendChild(row);
+        index++;
+    });
+
+    document.querySelectorAll(".eliminar-producto").forEach(btn => {
+        btn.addEventListener("click", function() {
+            if (document.querySelectorAll(".producto-row").length > 1) {
+                this.closest(".producto-row").remove();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

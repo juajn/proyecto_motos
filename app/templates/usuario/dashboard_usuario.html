@@ -2,17 +2,21 @@
 {% block content %}
 
 <!-- Barra de navegación con búsqueda y filtro -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light rounded shadow-sm mb-4">
-  <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="{{ url_for('usuario.dashboard') }}">Mi Tienda</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4 sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-dark" href="{{ url_for('usuario.dashboard') }}">
+      <i class="bi bi-shop-window me-2"></i> Mi Tienda
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+            data-bs-target="#navbarNav" aria-controls="navbarNav" 
+            aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div class="collapse navbar-collapse" id="navbarNav">
-      <form class="d-flex ms-auto" method="GET" action="{{ url_for('usuario.dashboard') }}">
+      <form class="d-flex ms-auto gap-2" method="GET" action="{{ url_for('usuario.dashboard') }}">
         <!-- Filtro por categoría -->
-        <select name="categoria" class="form-select me-2 rounded-pill">
+        <select name="categoria" class="form-select rounded-pill shadow-sm">
           <option value="">Todas las categorías</option>
           {% for cat in categorias %}
             <option value="{{ cat }}" {% if request.args.get('categoria') == cat %}selected{% endif %}>
@@ -22,42 +26,111 @@
         </select>
 
         <!-- Campo de búsqueda -->
-        <input class="form-control me-2 rounded-pill" type="search" name="q" 
+        <input class="form-control rounded-pill shadow-sm" type="search" name="q" 
                placeholder="Buscar productos..." value="{{ request.args.get('q', '') }}">
 
-        <button class="btn btn-dark rounded-pill" type="submit">Buscar</button>
+        <button class="btn btn-dark rounded-pill px-4 shadow-sm" type="submit">
+          <i class="bi bi-search"></i> Buscar
+        </button>
       </form>
     </div>
   </div>
 </nav>
 
+<!-- Contenido principal -->
 <div class="container py-4">
-  <h2 class="text-center mb-4">Bienvenido, {{ usuario.nombre }}</h2>
+  <h2 class="text-center mb-5 fw-bold">Bienvenido, {{ usuario.nombre }}</h2>
 
   <!-- Lista de productos -->
-  <div class="row">
+  <div class="row g-4">
     {% for producto in productos %}
-    <div class="col-md-4 mb-4">
-      <div class="card h-100 shadow-sm">
-        <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
-             class="card-img-top" alt="Producto">
-        <div class="card-body">
-          <h5 class="card-title">{{ producto.nombre }}</h5>
-          <p class="card-text">{{ producto.descripcion }}</p>
-          <p class="fw-bold">${{ producto.precio }}</p>
-          <form method="POST" action="{{ url_for('usuario.agregar_carrito', producto_id=producto.id) }}">
-            <input type="number" name="cantidad" min="1" max="{{ producto.stock }}" value="1" 
-                   class="form-control mb-2" required>
-            <button type="submit" class="btn btn-dark btn-sm rounded-pill">Agregar al carrito</button>
-          </form>
+    <div class="col-sm-6 col-md-4 col-lg-3">
+      <!-- Tarjeta del producto -->
+      <div class="card h-100 border-0 shadow-sm rounded-3 product-card" 
+           data-bs-toggle="modal" data-bs-target="#productoModal{{ producto.id }}">
+        <div class="position-relative">
+          <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
+               class="card-img-top rounded-top" alt="{{ producto.nombre }}">
+          <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow">
+            ${{ producto.precio }}
+          </span>
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title text-truncate fw-semibold">{{ producto.nombre }}</h5>
+          <p class="card-text small text-muted flex-grow-1">{{ producto.descripcion[:60] }}...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal del producto -->
+    <div class="modal fade" id="productoModal{{ producto.id }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title"><i class="bi bi-box me-2"></i>{{ producto.nombre }}</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body row g-4">
+            <!-- Imagen del producto -->
+            <div class="col-md-6 text-center">
+              <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
+                   class="img-fluid rounded shadow-sm" alt="{{ producto.nombre }}">
+            </div>
+            <!-- Información del producto -->
+            <div class="col-md-6">
+              <h4 class="fw-bold text-dark">${{ producto.precio }}</h4>
+              <p class="text-muted">{{ producto.descripcion }}</p>
+              <p><span class="fw-semibold">Categoría:</span> {{ producto.categoria }}</p>
+              <p><span class="fw-semibold">Stock disponible:</span> {{ producto.stock }}</p>
+
+              <!-- Formulario para añadir al carrito -->
+              <form method="POST" action="{{ url_for('usuario.agregar_carrito', producto_id=producto.id) }}">
+                <div class="input-group mb-3">
+                  <input type="number" name="cantidad" min="1" max="{{ producto.stock }}" value="1" 
+                         class="form-control" required>
+                  <button type="submit" class="btn btn-dark">
+                    <i class="bi bi-cart-plus me-1"></i> Añadir al carrito
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle"></i> Cerrar
+            </button>
+          </div>
         </div>
       </div>
     </div>
     {% else %}
-    <div class="col-12 text-center">
-      <p class="text-muted">No se encontraron productos para tu búsqueda.</p>
+    <div class="col-12 text-center py-5">
+      <p class="text-muted fs-5"><i class="bi bi-emoji-frown"></i> No se encontraron productos para tu búsqueda.</p>
     </div>
     {% endfor %}
   </div>
+</div>
+
+<!-- Estilos adicionales -->
+<style>
+  .product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  .modal-content {
+    border-radius: 12px;
+  }
+  .modal-header {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
+  .container{
+    margin-top: 20px;
+  }
+</style>
 
 {% endblock %}

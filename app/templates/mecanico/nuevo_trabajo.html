@@ -5,23 +5,36 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-lg-7">
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-black text-white">
-                    <h4 class="mb-0"><i class="fas fa-tools me-2"></i> Crear Nuevo Trabajo</h4>
+            <!-- Tarjeta principal -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header text-white py-3" 
+                     style="background-color: black; 
+                            background: linear-gradient(135deg, #212529, #343a40);">
+                    <h4 class="mb-0 fw-semibold">
+                        <i class="fas fa-tools me-2"></i> Crear Nuevo Trabajo
+                    </h4>
                 </div>
 
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        
+                        <!-- Descripción -->
                         <div class="mb-3">
-                            <label for="descripcion" class="form-label">Descripción</label>
-                            <input type="text" name="descripcion" class="form-control" id="descripcion" required>
+                            <label for="descripcion" class="form-label fw-semibold">
+                                <i class="fas fa-align-left me-2 text-primary"></i> Descripción
+                            </label>
+                            <input type="text" name="descripcion" class="form-control shadow-sm" 
+                                   id="descripcion" placeholder="Ej: Cambio de aceite y filtros" required>
                         </div>
 
+                        <!-- Cliente -->
                         <div class="mb-3">
-                            <label for="cliente_id" class="form-label">Cliente</label>
-                            <select name="cliente_id" class="form-select" id="cliente_id" required>
+                            <label for="cliente_id" class="form-label fw-semibold">
+                                <i class="fas fa-user me-2 text-primary"></i> Cliente
+                            </label>
+                            <select name="cliente_id" class="form-select shadow-sm" id="cliente_id" required>
                                 <option value="">Seleccione un cliente</option>
                                 {% for cliente in clientes %}
                                     <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
@@ -29,19 +42,29 @@
                             </select>
                         </div>
 
+                        <!-- Foto -->
                         <div class="mb-3">
-                            <label for="foto" class="form-label">Foto (opcional)</label>
-                            <input type="file" name="foto" class="form-control" id="foto">
+                            <label for="foto" class="form-label fw-semibold">
+                                <i class="fas fa-camera me-2 text-primary"></i> Foto (opcional)
+                            </label>
+                            <input type="file" name="foto" class="form-control shadow-sm" id="foto">
                         </div>
-                        <div class="mb-3">
-                            <label for="costo" class="form-label">Precio</label>
-                            <input type="number" name="costo" class="form-control" id="costo" step="0.01" required>
+
+                        <!-- Costo -->
+                        <div class="mb-4">
+                            <label for="costo" class="form-label fw-semibold">
+                                <i class="fas fa-dollar-sign me-2 text-primary"></i> Precio
+                            </label>
+                            <input type="number" name="costo" class="form-control shadow-sm" 
+                                   id="costo" step="0.01" placeholder="Ej: 120.00" required>
                         </div>
+
+                        <!-- Botones -->
                         <div class="text-end">
-                            <button type="submit" class="btn btn-dark">
-                                <i class="fas fa-save me-2"></i> Guardar trabajo
+                            <button type="submit" class="btn btn-dark px-4 shadow-sm">
+                                <i class="fas fa-save me-2"></i> Guardar
                             </button>
-                            <a href="{{ url_for('mecanico.dashboard') }}" class="btn btn-secondary">
+                            <a href="{{ url_for('mecanico.dashboard') }}" class="btn btn-outline-secondary px-4 ms-2 shadow-sm">
                                 <i class="fas fa-arrow-left me-2"></i> Volver
                             </a>
                         </div>
@@ -52,4 +75,17 @@
         </div>
     </div>
 </div>
+
+<!-- Estilos adicionales -->
+<style>
+    .form-label {
+        font-size: 0.95rem;
+    }
+    .form-control, .form-select {
+        border-radius: 10px;
+    }
+    .btn {
+        border-radius: 10px;
+    }
+</style>
 {% endblock %}

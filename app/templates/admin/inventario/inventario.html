@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">
+            <i class="fas fa-boxes me-2"></i> Inventario
+        </h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary rounded-pill shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i> Volver al Dashboard
+        </a>
+    </div>
+
+    <!-- Barra de búsqueda y botones -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <input type="text" id="busqueda" class="form-control shadow-sm me-2" 
+               placeholder="🔍 Buscar producto por nombre, categoría o descripción...">
+        <button id="btn-faltantes" class="btn btn-danger shadow-sm me-2">
+            <i class="fas fa-exclamation-triangle me-1"></i> Faltantes
+        </button>
+        <button id="btn-todos" class="btn btn-dark shadow-sm me-2">
+            <i class="fas fa-list me-1"></i> Todos
+        </button>
+        <button id="btn-exportar-csv" class="btn btn-success shadow-sm me-2">
+            <i class="fas fa-file-excel me-1"></i>  Excel
+        </button>
+        <button id="btn-exportar-pdf" class="btn btn-primary shadow-sm">
+            <i class="fas fa-file-pdf me-1"></i>  PDF
+        </button>
+    </div>
+
+    <!-- Tabla de inventario -->
+    <div class="card shadow-lg rounded-4">
+        <div class="card-body">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table align-middle table-hover" id="tabla-inventario-completa">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Categoría</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-inventario">
+                        {% for producto in productos %}
+                            <tr class="{% if producto.stock is not none and producto.stock <= 2 %}table-danger{% endif %}">
+                                <td>{{ producto.id }}</td>
+                                <td class="fw-semibold">{{ producto.nombre }}</td>
+                                <td>{{ producto.descripcion }}</td>
+                                <td>${{ "%.2f"|format(producto.precio) }}</td>
+                                <td>
+                                    {% if producto.stock is not none %}
+                                        <span class="badge {% if producto.stock <= 2 %}bg-danger{% else %}bg-success{% endif %}">
+                                            {{ producto.stock }}
+                                        </span>
+                                        {% if producto.stock <= 2 %}
+                                            <div class="small text-danger fw-bold">¡Se está acabando!</div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ producto.categoria }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No hay productos en el inventario.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Librerías necesarias -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("busqueda");
+    const filas = document.querySelectorAll("#tabla-inventario tr");
+    const btnFaltantes = document.getElementById("btn-faltantes");
+    const btnTodos = document.getElementById("btn-todos");
+    const btnCSV = document.getElementById("btn-exportar-csv");
+    const btnPDF = document.getElementById("btn-exportar-pdf");
+
+    // Búsqueda
+    inputBusqueda.addEventListener("keyup", function () {
+        const texto = this.value.toLowerCase();
+        filas.forEach(fila => {
+            const contenido = fila.textContent.toLowerCase();
+            fila.style.display = contenido.includes(texto) ? "" : "none";
+        });
+    });
+
+    // Filtros
+    btnFaltantes.addEventListener("click", () => {
+        filas.forEach(fila => {
+            const badge = fila.querySelector(".badge");
+            fila.style.display = (badge && badge.classList.contains("bg-danger")) ? "" : "none";
+        });
+    });
+    btnTodos.addEventListener("click", () => {
+        filas.forEach(fila => fila.style.display = "");
+        inputBusqueda.value = "";
+    });
+
+    // Exportar a Excel con encabezado azul
+    btnCSV.addEventListener("click", () => {
+        const tabla = document.getElementById("tabla-inventario-completa");
+        const filasVisibles = tabla.querySelectorAll("tbody tr");
+
+        let data = [];
+        let headers = ["ID", "Nombre", "Descripción", "Precio", "Stock", "Categoría"];
+        data.push(headers);
+
+        filasVisibles.forEach(fila => {
+            if (fila.style.display === "none") return;
+            const celdas = fila.querySelectorAll("td");
+            if (celdas.length === 0) return;
+
+            let row = [];
+            for (let i = 0; i < celdas.length; i++) {
+                row.push(celdas[i].innerText.trim());
+            }
+            data.push(row);
+        });
+
+        // Crear hoja
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        // Dar estilo azul al encabezado
+        headers.forEach((_, i) => {
+            let cellRef = XLSX.utils.encode_cell({ r:0, c:i });
+            if (!ws[cellRef].s) ws[cellRef].s = {};
+            ws[cellRef].s = {
+                fill: { fgColor: { rgb: "1F4E78" } },
+                font: { bold: true, color: { rgb: "FFFFFF" } }
+            };
+        });
+
+        // Crear libro y exportar
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+        XLSX.writeFile(wb, "inventario.xlsx");
+    });
+
+    // Exportar a PDF
+    btnPDF.addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF("landscape");
+        doc.setFontSize(14);
+        doc.text("Reporte de Inventario", 14, 15);
+
+        doc.autoTable({
+            html: "#tabla-inventario-completa",
+            theme: "grid",
+            headStyles: { fillColor: [40, 40, 40], halign: "center" },
+            bodyStyles: { fontSize: 9, valign: "middle" },
+            startY: 25,
+            styles: { overflow: "linebreak" }
+        });
+
+        doc.save("inventario.pdf");
+    });
+});
+</script>
+{% endblock %}

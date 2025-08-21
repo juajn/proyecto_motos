@@ -3,37 +3,89 @@
 {% block title %}Editar Usuario{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-black text-white">
-                <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Editar Usuario</h4>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Encabezado -->
+                <div class="card-header text-white py-3" 
+                     style="background: linear-gradient(135deg, #343a40, #212529);">
+                    <h4 class="mb-0 fw-semibold">
+                        <i class="fas fa-user-edit me-2"></i> Editar Usuario
+                    </h4>
+                </div>
+
+                <!-- Formulario -->
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('admin.editar_usuario', id=usuario.id) }}">
+                        
+                        <!-- Nombre -->
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label fw-semibold">
+                                <i class="fas fa-user me-2 text-primary"></i> Nombre
+                            </label>
+                            <input type="text" name="nombre" id="nombre" 
+                                   value="{{ usuario.nombre }}" 
+                                   class="form-control shadow-sm" required>
+                        </div>
+
+                        <!-- Correo -->
+                        <div class="mb-3">
+                            <label for="correo" class="form-label fw-semibold">
+                                <i class="fas fa-envelope me-2 text-primary"></i> Correo
+                            </label>
+                            <input type="email" name="correo" id="correo" 
+                                   value="{{ usuario.correo }}" 
+                                   class="form-control shadow-sm" required>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="mb-3">
+                            <label for="contraseña" class="form-label fw-semibold">
+                                <i class="fas fa-lock me-2 text-primary"></i> Nueva Contraseña
+                            </label>
+                            <input type="password" name="contraseña" id="contraseña" 
+                                   class="form-control shadow-sm" placeholder="Dejar en blanco para no cambiar">
+                        </div>
+
+                        <!-- Rol -->
+                        <div class="mb-4">
+                            <label for="rol" class="form-label fw-semibold">
+                                <i class="fas fa-user-tag me-2 text-primary"></i> Rol
+                            </label>
+                            <select name="rol" id="rol" class="form-select shadow-sm" required>
+                                <option value="admin" {% if usuario.rol == 'admin' %}selected{% endif %}>Administrador</option>
+                                <option value="mecanico" {% if usuario.rol == 'mecanico' %}selected{% endif %}>Mecánico</option>
+                                <option value="usuario" {% if usuario.rol == 'usuario' %}selected{% endif %}>Usuario</option>
+                            </select>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.listar_usuarios') }}" 
+                               class="btn btn-outline-secondary rounded-pill shadow-sm px-4">
+                                <i class="fas fa-arrow-left me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-dark rounded-pill shadow-sm px-4">
+                                <i class="fas fa-save me-2"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('admin.editar_usuario', id=usuario.id) }}">
-                    <div class="mb-3">
-                        <label for="nombre" class="form-label">Nombre</label>
-                        <input type="text" name="nombre" id="nombre" value="{{ usuario.nombre }}" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="rol" class="form-label">Rol</label>
-                        <select name="rol" id="rol" class="form-select" required>
-                            <option value="admin" {% if usuario.rol == 'admin' %}selected{% endif %}>Administrador</option>
-                            <option value="mecanico" {% if usuario.rol == 'mecanico' %}selected{% endif %}>Mecánico</option>
-                            <option value="usuario" {% if usuario.rol == 'usuario' %}selected{% endif %}>Usuario</option>
-                        </select>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('admin.listar_usuarios') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-dark">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
-                    </div>
-                </form>
-            </div>
+
         </div>
     </div>
 </div>
+
+<!-- Estilos adicionales -->
+<style>
+    .form-control, .form-select {
+        border-radius: 10px;
+    }
+    .btn {
+        font-weight: 500;
+    }
+</style>
 {% endblock %}

@@ -4,39 +4,41 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="fas fa-edit me-2"></i> Editar Trabajo</h4>
+    <div class="card border-0 shadow-lg rounded-3">
+        <!-- Encabezado con gradiente -->
+        <div class="card-header text-white fw-bold" style="background: linear-gradient(135deg, #343a40, #212529);">
+            <i class="fas fa-tools me-2"></i> Editar Trabajo
         </div>
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
+
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data" class="row g-3">
 
                 <!-- Descripción -->
-                <div class="mb-3">
-                    <label for="descripcion" class="form-label">Descripción</label>
+                <div class="col-md-12">
+                    <label for="descripcion" class="form-label fw-semibold">Descripción</label>
                     <input type="text" class="form-control" name="descripcion" value="{{ trabajo.descripcion }}" required>
                 </div>
 
                 <!-- Precio -->
-                <div class="mb-3">
-                    <label for="costo" class="form-label">Precio</label>
+                <div class="col-md-6">
+                    <label for="costo" class="form-label fw-semibold">Precio</label>
                     <input type="number" step="0.01" min="0" class="form-control" name="costo" value="{{ trabajo.costo or '' }}">
                 </div>
 
                 <!-- Estado -->
-                <div class="mb-3">
-                    <label for="estado" class="form-label">Estado</label>
+                <div class="col-md-6">
+                    <label for="estado" class="form-label fw-semibold">Estado</label>
                     <select class="form-select" name="estado" required>
                         <option value="pendiente" {% if trabajo.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
                         <option value="en proceso" {% if trabajo.estado == 'en proceso' %}selected{% endif %}>En proceso</option>
                         <option value="completado" {% if trabajo.estado == 'completado' %}selected{% endif %}>Completado</option>
-                        <option value="pagado" {% if trabajo.estado == 'pago' %}selected{% endif %}>Pagado</option>
+                        <option value="pagado" {% if trabajo.estado == 'pagado' %}selected{% endif %}>Pagado</option>
                     </select>
                 </div>
 
                 <!-- Mecánico -->
-                <div class="mb-3">
-                    <label for="mecanico_id" class="form-label">Mecánico</label>
+                <div class="col-md-6">
+                    <label for="mecanico_id" class="form-label fw-semibold">Mecánico</label>
                     <select class="form-select" name="mecanico_id" required>
                         {% for m in mecanicos %}
                             <option value="{{ m.id }}" {% if trabajo.mecanico_id == m.id %}selected{% endif %}>{{ m.nombre }}</option>
@@ -45,8 +47,8 @@
                 </div>
 
                 <!-- Cliente -->
-                <div class="mb-3">
-                    <label for="cliente_id" class="form-label">Cliente</label>
+                <div class="col-md-6">
+                    <label for="cliente_id" class="form-label fw-semibold">Cliente</label>
                     <select class="form-select" name="cliente_id" required>
                         {% for c in clientes %}
                             <option value="{{ c.id }}" {% if trabajo.cliente_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
@@ -54,45 +56,43 @@
                     </select>
                 </div>
 
-                <!-- Fecha de creación -->
-                <div class="mb-3">
-                    <label class="form-label">Fecha de creación</label>
-                    <input type="text" class="form-control"
-                        value="{{ trabajo.fecha_creacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_creacion else 'Sin fecha' }}"
-                        disabled>
+                <!-- Fechas -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Fecha de creación</label>
+                    <input type="text" class="form-control" 
+                           value="{{ trabajo.fecha_creacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_creacion else 'Sin fecha' }}" 
+                           disabled>
                 </div>
-
-                <!-- Fecha de pago -->
-                <div class="mb-3">
-                    <label class="form-label">Fecha de pago</label>
-                    <input type="text" class="form-control"
-                        value="{{ trabajo.fecha_cancelacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_cancelacion else 'Sin fecha' }}"
-                        disabled>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Fecha de pago</label>
+                    <input type="text" class="form-control" 
+                           value="{{ trabajo.fecha_cancelacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_cancelacion else 'Sin fecha' }}" 
+                           disabled>
                 </div>
 
                 <!-- Foto actual -->
-                <div class="mb-3">
-                    <label class="form-label">Foto actual</label><br>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Foto actual</label><br>
                     {% if trabajo.foto %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" width="100" class="rounded border">
+                        <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" width="120" class="rounded border shadow-sm">
                     {% else %}
-                        <span class="text-muted">Sin imagen</span>
+                        <span class="text-muted fst-italic">Sin imagen</span>
                     {% endif %}
                 </div>
 
                 <!-- Subir nueva foto -->
-                <div class="mb-3">
-                    <label for="foto" class="form-label">Nueva foto (opcional)</label>
+                <div class="col-md-12">
+                    <label for="foto" class="form-label fw-semibold">Nueva foto (opcional)</label>
                     <input type="file" class="form-control" name="foto" accept="image/*">
                 </div>
 
                 <!-- Botones -->
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('admin.listar_trabajos') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Cancelar
+                <div class="col-12 d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('admin.listar_trabajos') }}" class="btn btn-outline-secondary px-4 rounded-pill">
+                        <i class="fas fa-arrow-left me-2"></i> Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Actualizar
+                    <button type="submit" class="btn btn-dark px-4 rounded-pill">
+                        <i class="fas fa-save me-2"></i> Actualizar Trabajo
                     </button>
                 </div>
 
@@ -100,4 +100,23 @@
         </div>
     </div>
 </div>
+
+<!-- Estilos extra -->
+<style>
+    .btn-gradient {
+        background: linear-gradient(135deg, #343a40, #212529);
+        color: #fff;
+        border: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-gradient:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .form-label {
+        font-size: 0.9rem;
+        color: #333;
+    }
+</style>
 {% endblock %}

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from extensions import db, bcrypt, login_manager
-from models import Usuario, Producto, Trabajo ,db
+from models import DetalleVenta, Usuario, Producto, Trabajo, Venta ,db
 from datetime import datetime, timedelta
 import os
 from config import Config
@@ -112,7 +112,9 @@ def dashboard():
     stats = {
         'usuarios': Usuario.query.count(),
         'productos': Producto.query.count(),
-        'trabajos': Trabajo.query.count()
+        'trabajos': Trabajo.query.count(),
+        'ventas': Venta.query.count()
+          
     }
 
     # Conteo por rol de usuario
@@ -123,23 +125,32 @@ def dashboard():
     categorias_db = db.session.query(Producto.categoria).distinct().all()
     categorias = [c[0] for c in categorias_db if c[0]]
 
-    # Conteo de productos por categorías (según las categorías encontradas)
-    conteo_categorias = []
-    for cat in categorias:
-        conteo_categorias.append(Producto.query.filter(Producto.categoria == cat).count())
+    # Conteo de productos por categorías
+    conteo_categorias = [Producto.query.filter(Producto.categoria == cat).count() for cat in categorias]
 
     # Conteo de trabajos por día (últimos 5 días)
     hoy = datetime.now().date()
-    fechas = [(hoy - timedelta(days=i)) for i in reversed(range(5))]
-    labels_fechas = [fecha.strftime('%d/%m') for fecha in fechas]
+    fechas_trabajos = [(hoy - timedelta(days=i)) for i in reversed(range(5))]
+    labels_fechas = [fecha.strftime('%d/%m') for fecha in fechas_trabajos]
     conteo_trabajos = [
         Trabajo.query.filter(db.func.date(Trabajo.fecha_creacion) == fecha).count()
-        for fecha in fechas
+        for fecha in fechas_trabajos
+    ]
+
+    # Conteo de ventas por día (últimos 7 días)
+    fechas_ventas = [(hoy - timedelta(days=i)) for i in reversed(range(7))]
+    labels_ventas = [fecha.strftime('%d/%m') for fecha in fechas_ventas]
+    conteo_ventas = [
+        Venta.query.filter(db.func.date(Venta.fecha) == fecha).count()
+        for fecha in fechas_ventas
     ]
 
     # Pasar también mecánicos y clientes para los modales
     mecanicos = Usuario.query.filter_by(rol='mecanico').all()
     clientes = Usuario.query.filter_by(rol='usuario').all()
+    vendedores = Usuario.query.filter_by(rol='admin').all()
+    productos = Producto.query.all()
+
 
     return render_template(
         'admin/dashboard_admin.html',
@@ -151,8 +162,12 @@ def dashboard():
         conteo_categorias=conteo_categorias,
         labels_fechas=labels_fechas,
         conteo_trabajos=conteo_trabajos,
+        labels_ventas=labels_ventas,   
+        conteo_ventas=conteo_ventas,   
         mecanicos=mecanicos,
-        clientes=clientes
+        clientes=clientes,
+        vendedores=vendedores,
+        productos=productos
     )
 
 # ------------------
@@ -171,14 +186,30 @@ def listar_usuarios():
 def editar_usuario(id):
     if current_user.rol != 'admin':
         abort(403)
+
     usuario = Usuario.query.get_or_404(id)
+
     if request.method == 'POST':
+        # Actualizar nombre y correo
         usuario.nombre = request.form['nombre']
+        usuario.correo = request.form['correo']
+        
+        # Actualizar rol
         usuario.rol = request.form['rol']
+
+        # Si se ingresó una nueva contraseña, actualizarla
+        nueva_contraseña = request.form.get('contraseña')
+        if nueva_contraseña:  # Solo si no está vacío
+            from werkzeug.security import generate_password_hash
+            usuario.contraseña = generate_password_hash(nueva_contraseña)
+
+        # Guardar cambios
         db.session.commit()
-        flash('Usuario actualizado.', 'success')
+        flash('Usuario actualizado correctamente.', 'success')
         return redirect(url_for('admin.listar_usuarios'))
+
     return render_template('admin/usuarios/editar.html', usuario=usuario)
+
 
 @admin_bp.route('/usuarios/eliminar/<int:id>', methods=['POST'])
 @login_required
@@ -215,7 +246,7 @@ def crear_producto():
         imagen = request.files.get('imagen')
         categoria = request.form['categoria']
         nombre_imagen = save_uploaded_file(imagen)
-        nuevo = Producto(nombre=nombre, descripcion=descripcion, precio=precio, stock=stock, foto=nombre_imagen)
+        nuevo = Producto(nombre=nombre, descripcion=descripcion, precio=precio, stock=stock, foto=nombre_imagen, categoria=categoria)
         db.session.add(nuevo)
         db.session.commit()
         flash('Producto creado.', 'success')
@@ -657,3 +688,242 @@ def compra_exitosa():
     session.pop('carrito', None)
     flash("¡Compra realizada con éxito vía Stripe!", "success")
     return redirect(url_for('usuario.dashboard'))
+
+# ------------------
+# inventarios
+# ------------------
+@admin_bp.route('/inventario')
+@login_required
+def inventario():
+    if current_user.rol != 'admin':
+        abort(403)
+    productos = Producto.query.all()
+    return render_template('admin/inventario/inventario.html', productos=productos)
+
+
+# ============================
+# Registrar nueva venta
+# ============================
+@admin_bp.route('/ventas/nueva', methods=['POST'])
+@login_required
+def nueva_venta():
+    if current_user.rol != "admin":
+        abort(403)
+
+    try:
+        cliente_id = request.form.get("cliente_id")
+        vendedor_id = request.form.get("vendedor_id")
+        productos_form = request.form.getlist("productos[0][id]")  # esto es dinámico
+    except Exception as e:
+        flash(f"Error en los datos: {e}", "danger")
+        return redirect(url_for("admin.ventas"))
+
+    # Validar cliente y vendedor
+    cliente = Usuario.query.get(cliente_id)
+    vendedor = Usuario.query.get(vendedor_id)
+    if not cliente or cliente.rol != "usuario":
+        flash("El cliente seleccionado no es válido.", "danger")
+        return redirect(url_for("admin.ventas"))
+    if not vendedor or vendedor.rol != "admin":
+        flash("El vendedor seleccionado no es válido.", "danger")
+        return redirect(url_for("admin.ventas"))
+
+    # Crear la venta
+    venta = Venta(cliente_id=cliente.id, vendedor_id=vendedor.id, total=0.0)
+    db.session.add(venta)
+
+    total = 0.0
+    index = 0
+    while True:
+        producto_id = request.form.get(f"productos[{index}][id]")
+        cantidad = request.form.get(f"productos[{index}][cantidad]")
+        precio_unitario = request.form.get(f"productos[{index}][precio_unitario]")
+        if not producto_id:
+            break  # ya no hay más productos
+
+        producto = Producto.query.get(producto_id)
+        if not producto:
+            flash(f"Producto con ID {producto_id} no existe.", "warning")
+            index += 1
+            continue
+
+        cantidad = int(cantidad)
+        precio_unitario = float(precio_unitario)
+        subtotal = cantidad * precio_unitario
+        total += subtotal
+
+        # Crear detalle de venta
+        detalle = DetalleVenta(
+            venta=venta,
+            producto=producto,
+            cantidad=cantidad,
+            precio_unitario=precio_unitario,
+            subtotal=subtotal
+        )
+        db.session.add(detalle)
+
+        # Actualizar stock
+        if producto.stock is not None:
+            producto.stock -= cantidad
+            if producto.stock < 0:
+                producto.stock = 0  # no permitir negativos
+
+        index += 1
+
+    # Actualizar total de la venta
+    venta.total = total
+    db.session.commit()
+
+    flash("Venta registrada correctamente ✅", "success")
+    return redirect(url_for("admin.ventas"))
+# ============================
+# Listar y filtrar ventas
+# ============================
+@admin_bp.route('/ventas')
+@login_required
+def ventas():
+    if current_user.rol != 'admin':
+        abort(403)
+
+    query = Venta.query.join(Usuario, Venta.cliente)
+
+    # ====== FILTRO POR USUARIO ======
+    usuario = request.args.get("usuario", "").strip()
+    if usuario:
+        query = query.filter(
+            (Usuario.nombre.ilike(f"%{usuario}%")) | 
+            (Usuario.correo.ilike(f"%{usuario}%"))
+        )
+
+    # ====== FILTRO POR FECHAS ======
+    fecha_inicio = request.args.get("fecha_inicio")
+    fecha_fin = request.args.get("fecha_fin")
+
+    if fecha_inicio:
+        try:
+            inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d")
+            query = query.filter(Venta.fecha >= inicio)
+        except ValueError:
+            pass
+
+    if fecha_fin:
+        try:
+            fin = datetime.strptime(fecha_fin, "%Y-%m-%d")
+            fin = fin + timedelta(days=1) - timedelta(seconds=1)  # incluir todo el día
+            query = query.filter(Venta.fecha <= fin)
+        except ValueError:
+            pass
+
+    # Ejecutar consulta
+    ventas = query.order_by(Venta.fecha.desc()).all()
+    clientes = Usuario.query.filter_by(rol="usuario").all()
+    vendedores = Usuario.query.filter_by(rol="admin").all()
+    productos = Producto.query.all()
+    total = sum(venta.total for venta in ventas)
+
+    return render_template(
+        "admin/ventas/ingresos.html",
+        ventas=ventas,
+        clientes=clientes,
+        vendedores=vendedores,
+        productos=productos,
+        total=total
+    )
+
+
+# ============================
+# Editar venta
+# ============================
+@admin_bp.route('/ventas/<int:venta_id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_venta(venta_id):
+    if current_user.rol != "admin":
+        abort(403)
+
+    venta = Venta.query.get_or_404(venta_id)
+
+    if request.method == 'POST':
+        # Actualizar cliente y vendedor
+        cliente_id = request.form.get("cliente_id")
+        vendedor_id = request.form.get("vendedor_id")
+
+        venta.cliente_id = cliente_id
+        venta.vendedor_id = vendedor_id
+
+        # Eliminar detalles antiguos
+        for detalle in venta.detalles:
+            # devolver stock antes de borrar
+            detalle.producto.stock += detalle.cantidad
+            db.session.delete(detalle)
+
+        db.session.flush()  # asegura que se borren antes de recrear
+
+        # Crear nuevos detalles
+        total = 0.0
+        index = 0
+        while True:
+            producto_id = request.form.get(f"productos[{index}][id]")
+            cantidad = request.form.get(f"productos[{index}][cantidad]")
+            precio_unitario = request.form.get(f"productos[{index}][precio_unitario]")
+            if not producto_id:
+                break
+
+            producto = Producto.query.get(producto_id)
+            cantidad = int(cantidad)
+            precio_unitario = float(precio_unitario)
+            subtotal = cantidad * precio_unitario
+            total += subtotal
+
+            detalle = DetalleVenta(
+                venta=venta,
+                producto=producto,
+                cantidad=cantidad,
+                precio_unitario=precio_unitario,
+                subtotal=subtotal
+            )
+            db.session.add(detalle)
+
+            # Actualizar stock
+            producto.stock -= cantidad
+            if producto.stock < 0:
+                producto.stock = 0
+
+            index += 1
+
+        venta.total = total
+        db.session.commit()
+        flash("Venta actualizada correctamente ✅", "success")
+        return redirect(url_for("admin.ventas"))
+
+    clientes = Usuario.query.filter_by(rol="usuario").all()
+    vendedores = Usuario.query.filter_by(rol="admin").all()
+    productos = Producto.query.all()
+
+    return render_template(
+        "admin/ventas/editar.html",
+        venta=venta,
+        clientes=clientes,
+        vendedores=vendedores,
+        productos=productos
+    )
+
+
+# ============================
+# Eliminar venta
+# ============================
+@admin_bp.route('/ventas/<int:venta_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_venta(venta_id):
+    if current_user.rol != "admin":
+        abort(403)
+
+    venta = Venta.query.get_or_404(venta_id)
+
+    # Devolver stock
+    for detalle in venta.detalles:
+        detalle.producto.stock += detalle.cantidad
+
+    db.session.delete(venta)
+    db.session.commit()
+    flash("Venta eliminada correctamente 🗑️", "success")
+    return redirect(url_for("admin.ventas"))

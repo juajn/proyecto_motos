@@ -4,91 +4,126 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Bienvenido, {{ usuario.nombre }}</h2>
+    <h2 class="text-center mb-5 fw-bold text-dark">🔧 Panel del Mecánico</h2>
 
+    <!-- Botón crear trabajo -->
     <div class="text-end mb-4">
-        <a href="{{ url_for('mecanico.nuevo_trabajo') }}" class="btn btn-dark">
+        <a href="{{ url_for('mecanico.nuevo_trabajo') }}" class="btn btn-dark shadow-sm px-4">
             <i class="fas fa-plus-circle me-2"></i> Crear nuevo trabajo
         </a>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-black text-white">
-            <h5 class="mb-0">Trabajos asignados</h5>
+    <!-- Tarjeta principal -->
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header text-white" 
+             style="background-color: black; 
+                    background: linear-gradient(135deg, #212529, #343a40);">
+            <h5 class="mb-0 fw-semibold">
+                <i class="fas fa-clipboard-list me-2"></i> Trabajos asignados
+            </h5>
         </div>
         <div class="card-body p-0">
             {% if trabajos %}
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Descripción</th>
-                        <th>Precio</th>
-                        <th>Foto</th>
-                        <th>Fecha de creación</th>
-                        <th>Estado</th>
-                        <th>Cliente</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for trabajo in trabajos %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ trabajo.descripcion }}</td>
-                        <td>
-                            {% if trabajo.costo %}
-                                ${{ '%.2f'|format(trabajo.costo) }}
-                            {% else %}
-                                <span class="text-muted">No asignado</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if trabajo.foto %}
-                                <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
-                                     alt="Foto trabajo" 
-                                     style="width: 80px; height: auto; border-radius: 8px;">
-                            {% else %}
-                                <span class="text-muted">Sin foto</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if trabajo.fecha_creacion %}
-                                {{ trabajo.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
-                            {% else %}
-                                <span class="text-muted">Sin fecha</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if trabajo.estado == 'pendiente' %}
-                                <span class="badge bg-warning text-dark">Pendiente</span>
-                            {% else %}
-                                <span class="badge bg-success">Completado</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ trabajo.cliente.nombre }}</td>
-                        <td>
-                            {% if trabajo.estado == 'pendiente' %}
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="text-white" 
+                           style="background: linear-gradient(135deg, #212529, #343a40);">
+                        <tr>
+                            <th>#</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Foto</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Cliente</th>
+                            <th>Cambiar estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trabajo in trabajos %}
+                        <tr class="hover-row">
+                            <td class="fw-bold text-center">{{ loop.index }}</td>
+                            <td>{{ trabajo.descripcion }}</td>
+                            <td>
+                                {% if trabajo.costo %}
+                                    <span class="fw-semibold text-success">
+                                        ${{ '%.2f'|format(trabajo.costo) }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">No asignado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if trabajo.foto %}
+                                    <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
+                                         alt="Foto trabajo" 
+                                         class="img-thumbnail shadow-sm"
+                                         style="width: 70px; height: auto; border-radius: 10px;">
+                                {% else %}
+                                    <span class="text-muted">Sin foto</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if trabajo.fecha_creacion %}
+                                    <small class="text-muted">
+                                        {{ trabajo.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                                    </small>
+                                {% else %}
+                                    <span class="text-muted">Sin fecha</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if trabajo.estado == 'pendiente' %}
+                                    <span class="badge bg-warning text-dark px-3 py-2 shadow-sm">Pendiente</span>
+                                {% elif trabajo.estado == 'en proceso' %}
+                                    <span class="badge bg-info text-dark px-3 py-2 shadow-sm">En proceso</span>
+                                {% else %}
+                                    <span class="badge bg-success px-3 py-2 shadow-sm">Completado</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ trabajo.cliente.nombre }}</td>
+                            <td>
                                 <form method="POST" 
-                                      action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}" 
-                                      class="d-inline">
-                                    <input type="hidden" name="estado" value="completado">
-                                    <button type="submit" class="btn btn-sm btn-success">
-                                        <i class="fas fa-check-circle"></i> Completar
-                                    </button>
+                                      action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}">
+                                    <select name="estado" 
+                                            class="form-select form-select-sm custom-select shadow-sm"
+                                            onchange="this.form.submit()">
+                                        <option value="pendiente" {% if trabajo.estado == 'pendiente' %}selected{% endif %}>
+                                            Pendiente
+                                        </option>
+                                        <option value="en proceso" {% if trabajo.estado == 'en proceso' %}selected{% endif %}>
+                                            En proceso
+                                        </option>
+                                        <option value="completado" {% if trabajo.estado == 'completado' %}selected{% endif %}>
+                                            Completado
+                                        </option>
+                                    </select>
                                 </form>
-                            {% else %}
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-            <div class="p-4 text-center">
-                <p class="text-muted">No hay trabajos asignados aún.</p>
+            <div class="p-5 text-center">
+                <p class="text-muted fs-5">
+                    <i class="fas fa-clipboard-check me-2"></i> No hay trabajos asignados aún.
+                </p>
             </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Estilos adicionales -->
+<style>
+    .hover-row:hover {
+        background-color: #f8f9fa !important;
+        transition: background 0.3s ease;
+    }
+    .custom-select {
+        border-radius: 8px;
+    }
+</style>
 {% endblock %}

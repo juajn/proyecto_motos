@@ -4,131 +4,165 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Trabajos Registrados</h2>
+    <h2 class="fw-bold text-dark mb-0">Lista de Trabajos</h2>
     <button class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#formNuevoTrabajo">
-        <i class="fas fa-plus"></i> Nuevo Trabajo
+        <i class="fas fa-plus-circle me-2"></i> Nuevo Trabajo
     </button>
 </div>
 
 <!-- Formulario nuevo trabajo -->
 <div id="formNuevoTrabajo" class="collapse mb-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Trabajo</h5>
+    <div class="card border-0 shadow-lg rounded-3">
+        <div class="card-header text-white fw-semibold" style="background: linear-gradient(135deg, #343a40, #212529);">
+            <i class="fas fa-plus-circle me-2"></i> Agregar Trabajo
         </div>
         <div class="card-body">
             <form method="POST" action="{{ url_for('admin.crear_trabajo') }}" enctype="multipart/form-data">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="descripcion" class="form-label">Descripción</label>
-                        <input type="text" name="descripcion" id="descripcion" class="form-control" required>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Descripción</label>
+                        <input type="text" name="descripcion" class="form-control" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="estado" class="form-label">Estado</label>
-                        <select name="estado" id="estado" class="form-control" required>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Estado</label>
+                        <select name="estado" class="form-select" required>
                             <option value="Pendiente">Pendiente</option>
                             <option value="En proceso">En proceso</option>
                             <option value="Completado">Completado</option>
-                            
                         </select>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="costo" class="form-label">Precio</label>
-                        <input type="number" name="costo" id="costo" class="form-control" step="0.01" required>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Precio</label>
+                        <input type="number" name="costo" class="form-control" step="0.01" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="foto" class="form-label">Foto</label>
-                        <input type="file" name="foto" id="foto" class="form-control" accept="image/*">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Foto</label>
+                        <input type="file" name="foto" class="form-control" accept="image/*">
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="mecanico_id" class="form-label">Mecánico</label>
-                        <select name="mecanico_id" id="mecanico_id" class="form-control" required>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Mecánico</label>
+                        <select name="mecanico_id" class="form-select" required>
                             {% for m in mecanicos %}
                                 <option value="{{ m.id }}">{{ m.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="cliente_id" class="form-label">Cliente</label>
-                        <select name="cliente_id" id="cliente_id" class="form-control" required>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Cliente</label>
+                        <select name="cliente_id" class="form-select" required>
                             {% for c in clientes %}
                                 <option value="{{ c.id }}">{{ c.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Guardar Trabajo</button>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-dark"><i class="fas fa-save me-2"></i> Guardar Trabajo</button>
+                </div>
             </form>
         </div>
     </div>
 </div>
 
 <!-- Tabla de trabajos -->
-<div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Descripción</th>
-                <th>Estado</th>
-                <th>Mecánico</th>
-                <th>Cliente</th>
-                <th>Fecha</th>
-                <th>Fecha Pago</th>
-                <th class="text-center">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for trabajo in trabajos %}
-            <tr>
-                <td>{{ trabajo.id }}</td>
-                <td>{{ trabajo.descripcion }}</td>
-                <td>
-                    {% if trabajo.estado == 'Pagado' %}
-                        <span class="badge bg-success">Pagado</span>
-                    {% elif trabajo.estado == 'Pendiente' %}
-                        <span class="badge bg-warning text-dark">Pendiente</span>
-                    {% elif trabajo.estado == 'En proceso' %}
-                        <span class="badge bg-primary">En proceso</span>
-                    {% elif trabajo.estado == 'Terminado' %}
-                        <span class="badge bg-info">Terminado</span>
-                    {% else %}
-                        {{ trabajo.estado }}
-                    {% endif %}
-                </td>
-                <td>{{ trabajo.mecanico.nombre if trabajo.mecanico else 'Sin asignar' }}</td>
-                <td>{{ trabajo.cliente.nombre if trabajo.cliente else 'Sin asignar' }}</td>
-                <td>{{ trabajo.fecha_creacion.strftime('%Y-%m-%d') if trabajo.fecha_creacion else 'Sin fecha' }}</td>
-                <td>{{ trabajo.fecha_cancelacion.strftime('%Y-%m-%d %H:%M') if trabajo.fecha_cancelacion else 'Sin fecha' }}</td>
-                <td class="text-center">
-                    <!-- Botón Editar -->
-                    <a href="{{ url_for('admin.editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-warning">
-                        <i class="fas fa-edit"></i> Editar
-                    </a>
-
-                    <!-- Botón Pagado -->
-                    {% if trabajo.estado != 'Pagado' %}
-                    <form action="{{ url_for('admin.marcar_pagado', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Marcar este trabajo como Pagado?');">
-                        <button type="submit" class="btn btn-sm btn-success">
-                            <i class="fas fa-check"></i> Pagado
-                        </button>
-                    </form>
-                    {% endif %}
-
-                    <!-- Botón Eliminar -->
-                    <form action="{{ url_for('admin.eliminar_trabajo', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este trabajo?');">
-                        <button type="submit" class="btn btn-sm btn-danger">
-                            <i class="fas fa-trash-alt"></i> Eliminar
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card border-0 shadow-lg rounded-3">
+    <div class="card-header text-white fw-semibold" style="background: linear-gradient(135deg, #343a40, #212529);">
+        Lista de Trabajos Registrados
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead class="text-white" style="background: linear-gradient(135deg, #343a40, #212529);">
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Mecánico</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Fecha Pago</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trabajo in trabajos %}
+                <tr>
+                    <td>{{ trabajo.id }}</td>
+                    <td>{{ trabajo.descripcion }}</td>
+                    <td>
+                        {% if trabajo.estado == 'Pagado' %}
+                            <span class="badge estado bg-success">Pagado</span>
+                        {% elif trabajo.estado == 'Pendiente' %}
+                            <span class="badge estado bg-warning text-dark">Pendiente</span>
+                        {% elif trabajo.estado == 'En proceso' %}
+                            <span class="badge estado bg-primary">En proceso</span>
+                        {% elif trabajo.estado == 'Completado' %}
+                            <span class="badge estado bg-info">Completado</span>
+                        {% else %}
+                            {{ trabajo.estado }}
+                        {% endif %}
+                    </td>
+                    <td>{{ trabajo.mecanico.nombre if trabajo.mecanico else 'Sin asignar' }}</td>
+                    <td>{{ trabajo.cliente.nombre if trabajo.cliente else 'Sin asignar' }}</td>
+                    <td>{{ trabajo.fecha_creacion.strftime('%Y-%m-%d') if trabajo.fecha_creacion else 'Sin fecha' }}</td>
+                    <td>{{ trabajo.fecha_cancelacion.strftime('%Y-%m-%d %H:%M') if trabajo.fecha_cancelacion else 'Sin fecha' }}</td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <a href="{{ url_for('admin.editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-outline-dark rounded-pill px-3">
+                                <i class="fas fa-edit me-1"></i> Editar
+                            </a>
+                            {% if trabajo.estado != 'Pagado' %}
+                            <form action="{{ url_for('admin.marcar_pagado', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Marcar este trabajo como Pagado?');">
+                                <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                    <i class="fas fa-check-circle me-1"></i> Marcar Pagado
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form action="{{ url_for('admin.eliminar_trabajo', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este trabajo?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                    <i class="fas fa-trash-alt me-1"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-4">
     <i class="fas fa-arrow-left"></i> Volver al Dashboard
 </a>
+
+<!-- Estilos -->
+<style>
+    .btn-gradient {
+        background: linear-gradient(135deg, #343a40, #212529);
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        padding: 8px 18px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-gradient:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .badge.estado {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    .table th {
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    .card-header {
+        font-size: 1rem;
+    }
+</style>
 {% endblock %}
