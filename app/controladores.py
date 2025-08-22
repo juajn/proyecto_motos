@@ -360,12 +360,12 @@ def editar_trabajo(id):
         costo = request.form.get('costo')
         trabajo.costo = float(costo) if costo else None
 
-        # Si el estado es "completado", registrar fecha de pago
-        if trabajo.estado == 'completado' and not trabajo.fecha_cancelacion:
+        # Si el estado es "Completado", registrar fecha de pago
+        if trabajo.estado == 'Completado' and not trabajo.fecha_cancelacion:
             trabajo.fecha_cancelacion = datetime.utcnow()
 
-        # Si el estado cambia a otro que no sea "completado", borrar fecha de pago
-        elif trabajo.estado != 'completado':
+# Si el estado cambia a otro que no sea "Completado", borrar fecha de pago
+        elif trabajo.estado != 'Completado':
             trabajo.fecha_cancelacion = None
 
         # Subir nueva foto si se cargó
@@ -387,19 +387,6 @@ def editar_trabajo(id):
         clientes=clientes
     )
     
-@admin_bp.route('/trabajos/pagado/<int:id>', methods=['POST'])
-@login_required
-def marcar_pagado(id):
-    if current_user.rol != 'admin':
-        abort(403)
-
-    trabajo = Trabajo.query.get_or_404(id)
-    trabajo.estado = 'Pagado'
-    trabajo.fecha_cancelacion = datetime.utcnow()  # Guarda fecha y hora actuales
-    db.session.commit()
-    flash('Trabajo marcado como pagado.', 'success')
-    return redirect(url_for('admin.listar_trabajos'))
-
 @admin_bp.route('/trabajos/eliminar/<int:id>', methods=['POST'])
 @login_required
 def eliminar_trabajo(id):
@@ -411,6 +398,48 @@ def eliminar_trabajo(id):
     db.session.commit()
     flash("Trabajo eliminado correctamente.", "success")
     return redirect(url_for('admin.listar_trabajos'))
+
+
+@admin_bp.route("/trabajos/<int:id>/pagado", methods=["POST"])
+@login_required
+def marcar_pagado(id):
+    try:
+        trabajo = Trabajo.query.get_or_404(id)
+
+        if trabajo.estado == "Pagado":
+            flash("⚠️ Este trabajo ya estaba marcado como pagado.", "warning")
+            return redirect(url_for("admin.listar_trabajos"))
+
+        trabajo.estado = "Pagado"
+        trabajo.fecha_cancelacion = datetime.utcnow()
+
+        venta = Venta(
+            cliente_id=trabajo.cliente_id,
+            vendedor_id=current_user.id,
+            total=trabajo.costo,
+            trabajo_id=trabajo.id
+        )
+        db.session.add(venta)
+        db.session.flush()
+
+        detalle = DetalleVenta(
+            cantidad=1,
+            precio_unitario=trabajo.costo,
+            subtotal=trabajo.costo,
+            descripcion=f"Servicio: {trabajo.descripcion}",
+            producto_id=None,
+            venta=venta
+        )
+        db.session.add(detalle)
+        db.session.commit()
+
+        flash("✅ Trabajo marcado como pagado y registrado en ventas.", "success")
+        return redirect(url_for("admin.listar_trabajos"))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ Error al marcar trabajo como pagado: {str(e)}", "danger")
+        return redirect(url_for("admin.listar_trabajos"))
 
 # ------------------
 # DASHBOARD MECÁNICO
@@ -704,78 +733,65 @@ def inventario():
 # ============================
 # Registrar nueva venta
 # ============================
-@admin_bp.route('/ventas/nueva', methods=['POST'])
-@login_required
+@admin_bp.route("/ventas/nueva", methods=["POST"])
 def nueva_venta():
-    if current_user.rol != "admin":
-        abort(403)
-
     try:
         cliente_id = request.form.get("cliente_id")
         vendedor_id = request.form.get("vendedor_id")
-        productos_form = request.form.getlist("productos[0][id]")  # esto es dinámico
-    except Exception as e:
-        flash(f"Error en los datos: {e}", "danger")
-        return redirect(url_for("admin.ventas"))
 
-    # Validar cliente y vendedor
-    cliente = Usuario.query.get(cliente_id)
-    vendedor = Usuario.query.get(vendedor_id)
-    if not cliente or cliente.rol != "usuario":
-        flash("El cliente seleccionado no es válido.", "danger")
-        return redirect(url_for("admin.ventas"))
-    if not vendedor or vendedor.rol != "admin":
-        flash("El vendedor seleccionado no es válido.", "danger")
-        return redirect(url_for("admin.ventas"))
+        # Crear la venta
+        venta = Venta(cliente_id=cliente_id, vendedor_id=vendedor_id, total=0)
+        db.session.add(venta)
+        db.session.flush()  # para tener venta.id antes de guardar detalles
 
-    # Crear la venta
-    venta = Venta(cliente_id=cliente.id, vendedor_id=vendedor.id, total=0.0)
-    db.session.add(venta)
+        total = 0
+        productos = request.form.to_dict(flat=False)
 
-    total = 0.0
-    index = 0
-    while True:
-        producto_id = request.form.get(f"productos[{index}][id]")
-        cantidad = request.form.get(f"productos[{index}][cantidad]")
-        precio_unitario = request.form.get(f"productos[{index}][precio_unitario]")
-        if not producto_id:
-            break  # ya no hay más productos
+        # Recorremos los productos dinámicos del formulario
+        index = 0
+        while f"productos[{index}][id]" in request.form:
+            prod_id = request.form.get(f"productos[{index}][id]")
+            cantidad = int(request.form.get(f"productos[{index}][cantidad]", 1))
+            precio_unitario = float(request.form.get(f"productos[{index}][precio_unitario]", 0))
 
-        producto = Producto.query.get(producto_id)
-        if not producto:
-            flash(f"Producto con ID {producto_id} no existe.", "warning")
+            subtotal = cantidad * precio_unitario
+            total += subtotal
+
+            if prod_id and prod_id != "":  
+                # 👇 Es un producto real
+                detalle = DetalleVenta(
+                    cantidad=cantidad,
+                    precio_unitario=precio_unitario,
+                    subtotal=subtotal,
+                    producto_id=int(prod_id),
+                    venta=venta
+                )
+            else:
+                # 👇 Es un servicio, viene con descripción
+                descripcion = request.form.get(f"productos[{index}][descripcion]", "Servicio")
+                detalle = DetalleVenta(
+                    cantidad=cantidad,
+                    precio_unitario=precio_unitario,
+                    subtotal=subtotal,
+                    descripcion=descripcion,
+                    producto_id=None,
+                    venta=venta
+                )
+
+            db.session.add(detalle)
             index += 1
-            continue
 
-        cantidad = int(cantidad)
-        precio_unitario = float(precio_unitario)
-        subtotal = cantidad * precio_unitario
-        total += subtotal
+        # Actualizamos el total
+        venta.total = total
+        db.session.commit()
 
-        # Crear detalle de venta
-        detalle = DetalleVenta(
-            venta=venta,
-            producto=producto,
-            cantidad=cantidad,
-            precio_unitario=precio_unitario,
-            subtotal=subtotal
-        )
-        db.session.add(detalle)
+        flash("✅ Venta registrada correctamente", "success")
+        return redirect(url_for("admin.ventas"))
 
-        # Actualizar stock
-        if producto.stock is not None:
-            producto.stock -= cantidad
-            if producto.stock < 0:
-                producto.stock = 0  # no permitir negativos
-
-        index += 1
-
-    # Actualizar total de la venta
-    venta.total = total
-    db.session.commit()
-
-    flash("Venta registrada correctamente ✅", "success")
-    return redirect(url_for("admin.ventas"))
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ Error al registrar la venta: {str(e)}", "danger")
+        return redirect(url_for("admin.ventas"))
 # ============================
 # Listar y filtrar ventas
 # ============================

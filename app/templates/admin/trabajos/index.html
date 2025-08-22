@@ -29,6 +29,7 @@
                             <option value="Pendiente">Pendiente</option>
                             <option value="En proceso">En proceso</option>
                             <option value="Completado">Completado</option>
+                            <option value="Pagado">Pagado</option> <!-- 👈 agregado -->
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -104,14 +105,20 @@
                     <td>{{ trabajo.mecanico.nombre if trabajo.mecanico else 'Sin asignar' }}</td>
                     <td>{{ trabajo.cliente.nombre if trabajo.cliente else 'Sin asignar' }}</td>
                     <td>{{ trabajo.fecha_creacion.strftime('%Y-%m-%d') if trabajo.fecha_creacion else 'Sin fecha' }}</td>
-                    <td>{{ trabajo.fecha_cancelacion.strftime('%Y-%m-%d %H:%M') if trabajo.fecha_cancelacion else 'Sin fecha' }}</td>
+                    <td>
+                        {% if trabajo.estado == 'Pagado' %}
+                            {{ trabajo.fecha_cancelacion.strftime('%Y-%m-%d %H:%M') if trabajo.fecha_cancelacion else '---' }}
+                        {% else %}
+                            Sin fecha
+                        {% endif %}
+                    </td>
                     <td class="text-center">
                         <div class="d-flex justify-content-center gap-2 flex-wrap">
                             <a href="{{ url_for('admin.editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-outline-dark rounded-pill px-3">
                                 <i class="fas fa-edit me-1"></i> Editar
                             </a>
                             {% if trabajo.estado != 'Pagado' %}
-                            <form action="{{ url_for('admin.marcar_pagado', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Marcar este trabajo como Pagado?');">
+                            <form action="{{ url_for('admin.marcar_pagado', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Marcar este trabajo como Pagado y registrarlo en ventas?');">
                                 <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
                                     <i class="fas fa-check-circle me-1"></i> Marcar Pagado
                                 </button>

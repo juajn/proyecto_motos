@@ -86,9 +86,15 @@
                                 <td style="white-space: pre-line;">
                                     {% if venta.detalles %}
                                         {% for detalle in venta.detalles %}
-                                            • {{ detalle.producto.nombre }}  
-                                              ({{ detalle.cantidad }} x ${{ "%.2f"|format(detalle.precio_unitario) }})  
-                                              = ${{ "%.2f"|format(detalle.subtotal) }}
+                                            {% if detalle.producto %}
+                                                • {{ detalle.producto.nombre }}  
+                                                  ({{ detalle.cantidad }} x ${{ "%.2f"|format(detalle.precio_unitario) }})  
+                                                  = ${{ "%.2f"|format(detalle.subtotal) }}
+                                            {% else %}
+                                                • {{ detalle.descripcion }}  
+                                                  ({{ detalle.cantidad }} x ${{ "%.2f"|format(detalle.precio_unitario) }})  
+                                                  = ${{ "%.2f"|format(detalle.subtotal) }}
+                                            {% endif %}
                                             {% if not loop.last %}\n{% endif %}
                                         {% endfor %}
                                     {% else %}
@@ -98,11 +104,11 @@
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center flex-wrap gap-1">
                                         <a href="{{ url_for('admin.editar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit">Editar</i>
+                                            <i class="fas fa-edit"></i> Editar
                                         </a>
                                         <form method="POST" action="{{ url_for('admin.eliminar_venta', venta_id=venta.id) }}" onsubmit="return confirm('¿Eliminar esta venta?');">
                                             <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash">Eliminar</i>
+                                                <i class="fas fa-trash"></i> Eliminar
                                             </button>
                                         </form>
                                     </div>
@@ -165,7 +171,7 @@
             <div id="productos-container">
               <div class="row mb-2 producto-row">
                 <div class="col-md-5">
-                  <select name="productos[0][id]" class="form-select" required>
+                  <select name="productos[0][id]" class="form-select">
                     <option value="">Seleccione un producto</option>
                     {% for producto in productos %}
                       <option value="{{ producto.id }}">{{ producto.nombre }} - ${{ "%.2f"|format(producto.precio) }}</option>
@@ -173,14 +179,14 @@
                   </select>
                 </div>
                 <div class="col-md-3">
-                  <input type="number" name="productos[0][cantidad]" class="form-control" min="1" value="1" required>
+                  <input type="number" name="productos[0][cantidad]" class="form-control" min="1" value="1">
                 </div>
                 <div class="col-md-3">
-                  <input type="number" name="productos[0][precio_unitario]" class="form-control" step="0.01" placeholder="Precio unitario" required>
+                  <input type="number" name="productos[0][precio_unitario]" class="form-control" step="0.01" placeholder="Precio unitario">
                 </div>
                 <div class="col-md-1 d-flex align-items-center justify-content-center">
                   <button type="button" class="btn btn-danger btn-sm eliminar-producto">
-                    <i class="fas fa-trash">Eliminar</i>
+                    <i class="fas fa-trash"></i>
                   </button>
                 </div>
               </div>
@@ -235,15 +241,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         let ws = XLSX.utils.aoa_to_sheet(data);
-        let headers = data[0];
-        headers.forEach((_, i) => {
-            let cellRef = XLSX.utils.encode_cell({ r:0, c:i });
-            ws[cellRef].s = {
-                fill: { fgColor: { rgb: "1F4E78" } },
-                font: { bold: true, color: { rgb: "FFFFFF" } }
-            };
-        });
-
         let wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");
         XLSX.writeFile(wb, "ventas.xlsx");

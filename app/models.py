@@ -6,7 +6,7 @@ class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
     correo = db.Column(db.String(120), unique=True, nullable=False)
-    contraseña = db.Column(db.String(120), nullable=False)
+    contraseña = db.Column(db.Text, nullable=False)
     rol = db.Column(db.String(20), nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     imagen = db.Column(db.String(200))
@@ -14,14 +14,26 @@ class Usuario(db.Model, UserMixin):
     
 
 class Producto(db.Model):
-    __tablename__ = 'producto'
+    __tablename__ = "producto"
+
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
-    descripcion = db.Column(db.Text)
+    descripcion = db.Column(db.Text, nullable=True)
     precio = db.Column(db.Float, nullable=False)
-    foto = db.Column(db.String(200))
-    stock = db.Column(db.Integer, nullable=False, default=0)
-    categoria = db.Column(db.String(100),nullable=False)
+    stock = db.Column(db.Integer, nullable=True)
+    foto = db.Column(db.String(200), nullable=True)
+    categoria = db.Column(db.String(100), nullable=True)
+
+    # Relación inversa
+    detalles = db.relationship("DetalleVenta", back_populates="producto")
+
+from enum import Enum
+
+class EstadoTrabajo(str, Enum):
+    PENDIENTE = "Pendiente"
+    EN_PROCESO = "En proceso"
+    COMPLETADO = "Completado"
+    PAGADO = "Pagado"
 
 class Trabajo(db.Model):
     __tablename__ = 'trabajo'
@@ -56,7 +68,7 @@ class Venta(db.Model):
 
     trabajo_id = db.Column(db.Integer, db.ForeignKey('trabajo.id'), nullable=True)
     trabajo = db.relationship('Trabajo', backref='venta_asociada', uselist=False)
-
+    detalles = db.relationship("DetalleVenta", back_populates="venta", lazy=True)
     # 👇 Aquí va el cascade
     detalles = db.relationship(
         'DetalleVenta',
@@ -67,15 +79,16 @@ class Venta(db.Model):
 
 
 class DetalleVenta(db.Model):
-    __tablename__ = 'detalle_venta'
+    __tablename__ = "detalle_venta"
 
     id = db.Column(db.Integer, primary_key=True)
-    cantidad = db.Column(db.Integer, nullable=False, default=1)
+    cantidad = db.Column(db.Integer, nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
+    descripcion = db.Column(db.String(255), nullable=True)
 
-    venta_id = db.Column(db.Integer, db.ForeignKey('venta.id'), nullable=False)
-    venta = db.relationship('Venta', back_populates='detalles')
+    venta_id = db.Column(db.Integer, db.ForeignKey("venta.id"), nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=True)  # 👈 permite NULL
 
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
-    producto = db.relationship('Producto', backref='detalles_vendidos')
+    venta = db.relationship("Venta", back_populates="detalles")
+    producto = db.relationship("Producto", back_populates="detalles")
