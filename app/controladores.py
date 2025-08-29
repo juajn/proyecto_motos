@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 from extensions import db, bcrypt, login_manager
 from models import DetalleVenta, Usuario, Producto, Trabajo, Venta ,db
 from datetime import datetime, timedelta
+from sqlalchemy.sql.expression import func
 import os
 from config import Config
 from flask import session
@@ -35,6 +36,43 @@ def save_uploaded_file(file):
         return filename
     return None
 
+
+@auth_bp.route('/principal')
+def principal():
+    q = request.args.get('q', '').strip()
+    categoria_id = request.args.get('categoria', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 6  # Máximo 6 productos en la página
+
+    productos_query = Producto.query
+
+    if q:
+        productos_query = productos_query.filter(
+            (Producto.nombre.ilike(f"%{q}%")) |
+            (Producto.descripcion.ilike(f"%{q}%"))
+        )
+
+    if categoria_id:
+        productos_query = productos_query.filter(Producto.categoria == categoria_id)
+
+    productos_paginated = productos_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    categorias = db.session.query(Producto.categoria).distinct().all()
+    categorias = [c[0] for c in categorias if c[0]]
+
+    carrusel = Producto.query.order_by(func.random()).limit(3).all()
+    ofertas = Producto.query.order_by(func.random()).limit(3).all()
+
+    return render_template(
+        'auth/principal.html',
+        productos=productos_paginated.items,
+        pagination=productos_paginated,
+        categorias=categorias,
+        q=q,
+        categoria_id=categoria_id,
+        carrusel=carrusel,
+        ofertas=ofertas
+    )
 # ------------------
 # AUTENTICACION
 # ------------------

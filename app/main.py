@@ -1,5 +1,6 @@
 from flask import Flask, redirect
 import os
+import random
 from config import Config
 from extensions import db, login_manager, bcrypt
 
@@ -27,10 +28,14 @@ def create_app():
     return app  
 
 app = create_app()
-
+@app.template_filter('shuffle')
+def shuffle_filter(seq):
+    seq = list(seq)
+    random.shuffle(seq)
+    return seq
 @app.route('/')
 def inicio():
-    return redirect('/login')
+    return redirect('/principal')
 
 if __name__ == '__main__':
     app.run(debug=True)
