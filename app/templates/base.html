@@ -3,56 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Panel{% endblock %}</title>
+    <title>{% block title %}Panel de Control{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <style>
-        .navbar {
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #f39c12;
+            --accent-color: #3498db;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3748;
+            --light-text: #718096;
+            --sidebar-width: 250px;
+            --header-height: 70px;
         }
-
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a202c 100%);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            height: var(--header-height);
+            padding: 0 1.5rem;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            color: var(--secondary-color);
+            margin-right: 0.5rem;
+            font-size: 1.4rem;
+        }
+        
         .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link i {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .nav-link:hover, .nav-link:focus {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link.active {
+            color: white !important;
+            background-color: rgba(243, 156, 18, 0.2);
+        }
+        
+        .navbar-toggler {
+            border: none;
+            color: white;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+        
+        /* User dropdown */
+        .user-dropdown {
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-dropdown:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        
+        .dropdown-item {
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dropdown-item.logout {
+            color: #e74c3c;
+        }
+        
+        .dropdown-item.logout:hover {
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        .container-fluid {
+            padding: 0 2rem;
+        }
+        
+        /* Dashboard cards */
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .bg-primary-light {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+        
+        .bg-success-light {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+        
+        .bg-warning-light {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+        }
+        
+        .bg-danger-light {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 2.5rem 0 1.5rem;
+            margin-top: auto;
+        }
+        
+        .footer-title {
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--secondary-color);
+            border-radius: 2px;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.7rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .footer-links a i {
+            margin-right: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .footer-links a:hover {
+            color: var(--secondary-color);
+            transform: translateX(5px);
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary-color), #3b5998);
+            border: none;
             font-weight: 500;
         }
-
-        .rounded-circle {
-            object-fit: cover;
+        
+        .btn-primary:hover {
+            background: linear-gradient(to right, #34495e, #2d4373);
         }
-
-        .dropdown-menu-end {
-            right: 0;
-            left: auto;
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .navbar-collapse {
+                background: var(--primary-color);
+                padding: 1rem;
+                border-radius: 8px;
+                margin-top: 1rem;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .container-fluid {
+                padding: 0 1rem;
+            }
         }
-
-        footer {
-            background: #212529;
-            color: #f8f9fa;
-            padding: 40px 0 20px;
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        footer a {
-            color: #f8f9fa;
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            color: #ffc107;
-        }
-
-        .social-icons a {
-            font-size: 1.3rem;
-            margin: 0 10px;
-            transition: color 0.3s;
-        }
-
-        .social-icons a:hover {
-            color: #0d6efd;
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
         }
     </style>
 
@@ -61,142 +333,228 @@
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg px-4">
-    <a class="navbar-brand fw-bold" href="{{ url_for('auth.principal') }}">
-        {% if current_user.is_authenticated %}
-            {% if current_user.rol == 'admin' %}
-                <i class="fas fa-tools me-2"></i> Panel de Administrador
-            {% elif current_user.rol == 'mecanico' %}
-                <i class="fas fa-wrench me-2"></i> Panel de Mecánico
-            {% elif current_user.rol == 'usuario' %}
-                <i class="fas fa-user me-2"></i> Panel de Usuario
-            {% endif %}
-        {% else %}
-            <i class="fas fa-home me-2"></i> Mi Tienda
-        {% endif %}
-    </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav align-items-center">
-            
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="
             {% if current_user.is_authenticated %}
-                <!-- Menú para Admin -->
+                {% if current_user.rol == 'admin' %}{{ url_for('admin.dashboard') }}
+                {% elif current_user.rol == 'mecanico' %}{{ url_for('mecanico.dashboard') }}
+                {% elif current_user.rol == 'usuario' %}{{ url_for('usuario.dashboard') }}
+                {% endif %}
+            {% else %}
+                {{ url_for('auth.principal') }}
+            {% endif %}
+        ">
+            {% if current_user.is_authenticated %}
                 {% if current_user.rol == 'admin' %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.listar_usuarios') }}"><i class="fas fa-users me-1"></i> Usuarios</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.listar_productos') }}"><i class="fas fa-boxes me-1"></i> Productos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.listar_trabajos') }}"><i class="fas fa-briefcase me-1"></i> Trabajos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.inventario') }}"><i class="fas fa-tags me-1"></i> Inventario</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.ventas') }}"><i class="fas fa-chart-line me-1"></i> Ventas</a></li>
+                    <i class="bi bi-speedometer2"></i> Panel de Administración
+                {% elif current_user.rol == 'mecanico' %}
+                    <i class="bi bi-tools"></i> Panel de Mecánico
+                {% elif current_user.rol == 'usuario' %}
+                    <i class="bi bi-person-circle"></i> Área de Usuario
                 {% endif %}
+            {% else %}
+                <i class="bi bi-shop"></i> Mi Tienda
+            {% endif %}
+        </a>
 
-                <!-- Menú para Mecánico -->
-                {% if current_user.rol == 'mecanico' %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('mecanico.dashboard') }}"><i class="fas fa-tasks me-1"></i> Mis Trabajos</a></li>
-                {% endif %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-                <!-- Menú para Usuario -->
-                {% if current_user.rol == 'usuario' %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('usuario.ver_trabajos') }}"><i class="fas fa-clipboard-list me-1"></i> Mis Trabajos</a></li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('usuario.ver_carrito') }}">
-                            <i class="fas fa-shopping-cart me-1"></i> Carrito
-                            {% if session.get('carrito') %}
-                                <span class="badge rounded-pill bg-danger">{{ session['carrito']|length }}</span>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav align-items-center">
+                
+                {% if current_user.is_authenticated %}
+                    <!-- Menú para Admin -->
+                    {% if current_user.rol == 'admin' %}
+                        
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'admin.listar_usuarios' }}" href="{{ url_for('admin.listar_usuarios') }}">
+                                <i class="bi bi-people-fill"></i> Usuarios
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'admin.listar_productos' }}" href="{{ url_for('admin.listar_productos') }}">
+                                <i class="bi bi-box-seam"></i> Productos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'admin.listar_trabajos' }}" href="{{ url_for('admin.listar_trabajos') }}">
+                                <i class="bi bi-briefcase-fill"></i> Trabajos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'admin.inventario' }}" href="{{ url_for('admin.inventario') }}">
+                                <i class="bi bi-clipboard-data"></i> Inventario
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'admin.ventas' }}" href="{{ url_for('admin.ventas') }}">
+                                <i class="bi bi-graph-up"></i> Ventas
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    
+                    <!-- Menú para Usuario -->
+                    {% if current_user.rol == 'usuario' %}
+                        
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'usuario.ver_trabajos' }}" href="{{ url_for('usuario.ver_trabajos') }}">
+                                <i class="bi bi-clipboard-check"></i> Mis Trabajos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'usuario.ver_carrito' }}" href="{{ url_for('usuario.ver_carrito') }}">
+                                <i class="bi bi-cart3"></i> Carrito
+                                {% if session.get('carrito') %}
+                                    <span class="badge bg-danger ms-1">{{ session['carrito']|length }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Menú Usuario Autenticado -->
+                    <li class="nav-item dropdown">
+                        <button class="btn user-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if current_user.imagen %}
+                                <img src="{{ url_for('static', filename='uploads/' + current_user.imagen) }}" class="user-avatar me-2">
+                            {% else %}
+                                <i class="bi bi-person-circle me-2" style="font-size: 1.8rem;"></i>
                             {% endif %}
+                            <span class="d-none d-md-inline">{{ current_user.nombre }}</span>
+                            <i class="bi bi-chevron-down ms-1"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="
+                                    {% if current_user.rol == 'admin' %}{{ url_for('admin.dashboard') }}
+                                    {% elif current_user.rol == 'mecanico' %}{{ url_for('mecanico.dashboard') }}
+                                    {% elif current_user.rol == 'usuario' %}{{ url_for('usuario.dashboard') }}
+                                    {% endif %}
+                                ">
+                                 
+                                <a class="dropdown-item logout" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                
+                {% else %}
+                    <!-- Si no está autenticado -->
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'auth.login' }}" href="{{ url_for('auth.login') }}">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'auth.registro' }}" href="{{ url_for('auth.registro') }}">
+                            <i class="bi bi-person-plus"></i> Registrarse
                         </a>
                     </li>
                 {% endif %}
-
-                <!-- Menú Usuario Autenticado -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
-                        {% if current_user.imagen %}
-                            <img src="{{ url_for('static', filename='uploads/' + current_user.imagen) }}" width="32" height="32" class="rounded-circle me-2">
-                        {% else %}
-                            <i class="fas fa-user-circle fa-lg me-2"></i>
-                        {% endif %}
-                        {{ current_user.nombre }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
-                                <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            
-            {% else %}
-                <!-- Si no está autenticado -->
-                <li class="nav-item"><a class="btn btn-outline-primary me-2" href="{{ url_for('auth.login') }}">Iniciar Sesión</a></li>
-                <li class="nav-item"><a class="btn btn-primary" href="{{ url_for('auth.registro') }}">Registrarse</a></li>
-            {% endif %}
-        </ul>
+            </ul>
+        </div>
     </div>
 </nav>
 
 <!-- Contenido principal -->
-<main class="container py-4">
-    {% block content %}{% endblock %}
+<main>
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
 </main>
 
-<!-- Footer -->
-<footer class="mt-5">
-    <div class="container text-center text-md-start">
+<!-- Footer: Solo se muestra en la página principal y en el panel de usuario -->
+{% if not current_user.is_authenticated or current_user.rol == 'usuario' %}
+<footer>
+    <div class="container">
         <div class="row">
             <!-- Información -->
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-bold">Mi Tienda</h5>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <h5 class="footer-title">Mi Tienda</h5>
                 <p>La mejor experiencia en compras en línea. Productos de calidad y atención personalizada.</p>
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/" class="social-icon" target="_blank">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+                    <a href="https://x.com/" class="social-icon" target="_blank">
+                        <i class="bi bi-twitter-x"></i>
+                    </a>
+                    <a href="https://www.instagram.com/" class="social-icon" target="_blank">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+                    <a href="https://web.whatsapp.com/" class="social-icon" target="_blank">
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+                </div>
             </div>
 
             <!-- Enlaces -->
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-bold">Enlaces rápidos</h5>
-                <ul class="list-unstyled">
-                    <li><a href="{{ url_for('auth.principal') }}">Inicio</a></li>
-                    <li><a href="{{ url_for('auth.login') }}">Iniciar Sesión</a></li>
-                    <li><a href="{{ url_for('auth.registro') }}">Registrarse</a></li>
-                    <li><a href="#">Contacto</a></li>
+            <div class="col-lg-2 col-md-6 mb-4">
+                <h5 class="footer-title">Enlaces</h5>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('auth.principal') }}"><i class="bi bi-house-door"></i> Inicio</a></li>
+                    {% if not current_user.is_authenticated %}
+                    <li><a href="{{ url_for('auth.login') }}"><i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión</a></li>
+                    <li><a href="{{ url_for('auth.registro') }}"><i class="bi bi-person-plus"></i> Registrarse</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('usuario.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    {% endif %}
+                    <li><a href="#"><i class="bi bi-telephone"></i> Contacto</a></li>
                 </ul>
             </div>
 
-            <!-- Redes Sociales -->
-            <div class="col-md-4 mb-4 text-center">
-                <h5 class="fw-bold">Síguenos</h5>
-                <ul class="list-unstyled d-flex justify-content-center mb-3">
-                <div class="social-icons">
-                <li> <a href="https://www.facebook.com/?locale=es_LA"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-facebook" viewBox="0 0 16 16">
-  <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/>
-</svg></a></li>
-                <li><a href="https://x.com/?lang=es"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x" viewBox="0 0 16 16">
-  <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/>
-</svg></a></li>
-                <li><a href="https://www.instagram.com/"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-instagram" viewBox="0 0 16 16">
-  <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/>
-</svg></a></li>
-                <li><a href="https://web.whatsapp.com/"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">
-  <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
-</svg></a></li>
-                </div>
+            <!-- Soporte -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h5 class="footer-title">Soporte</h5>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="bi bi-question-circle"></i> Centro de ayuda</a></li>
+                    <li><a href="#"><i class="bi bi-shield-check"></i> Política de privacidad</a></li>
+                    <li><a href="#"><i class="bi bi-file-text"></i> Términos de servicio</a></li>
+                    <li><a href="#"><i class="bi bi-envelope"></i> Contactar soporte</a></li>
                 </ul>
             </div>
 
+            <!-- Contacto -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h5 class="footer-title">Contacto</h5>
+                <ul class="footer-links">
+                    <li><i class="bi bi-geo-alt"></i> Av. Principal #123, Ciudad</li>
+                    <li><i class="bi bi-telephone"></i> +1 234 567 890</li>
+                    <li><i class="bi bi-envelope"></i> info@mitienda.com</li>
+                    <li><i class="bi bi-clock"></i> Lun-Vie: 9:00 - 18:00</li>
+                </ul>
+            </div>
         </div>
 
-        <hr class="border-light">
-
-        <div class="text-center">
-            <p class="mb-0">&copy; {{ current_year|default(2025) }} Mi Tienda. Todos los derechos reservados.</p>
+        <div class="copyright">
+            <p class="mb-0">&copy; 2023 Mi Tienda. Todos los derechos reservados.</p>
         </div>
     </div>
 </footer>
+{% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Activar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // Añadir clase de animación a los elementos del dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.dashboard-card');
+        cards.forEach((card, index) => {
+            card.classList.add('fade-in');
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    });
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -3,112 +3,221 @@
 {% block title %}Ventas{% endblock %}
 
 {% block content %}
-<div class="container my-5">
+<div class="container-fluid px-4 my-4">
 
-    <!-- ==================== HEADER ==================== -->
+    <!-- ==================== HEADER MEJORADO ==================== -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark">
-            <i class="fas fa-cash-register me-2"></i> Gestión de Ventas
-        </h2>
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-cash-register me-2"></i> Gestionar Ventas
+            </h2>
+            <p class="text-muted mb-0">Administra y realiza un seguimiento de todas las transacciones</p>
+        </div>
         <div class="d-flex gap-2">
             <!-- Botón agregar venta -->
-            <button class="btn btn-success rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
+            <button class="btn btn-success rounded-3 shadow-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
                 <i class="fas fa-plus me-2"></i> Nueva Venta
             </button>
             <!-- Exportar Excel -->
-            <button id="btn-exportar-excel" class="btn btn-success rounded-pill shadow-sm">
-                <i class="fas fa-file-excel me-2"></i> Exportar Excel
+            <button id="btn-exportar-excel" class="btn btn-outline-success rounded-3 shadow-sm d-flex align-items-center">
+                <i class="fas fa-file-excel me-2"></i> Excel
             </button>
             <!-- Exportar PDF -->
-            <button id="btn-exportar-pdf" class="btn btn-primary rounded-pill shadow-sm">
-                <i class="fas fa-file-pdf me-2"></i> Exportar PDF
+            <button id="btn-exportar-pdf" class="btn btn-outline-primary rounded-3 shadow-sm d-flex align-items-center">
+                <i class="fas fa-file-pdf me-2"></i> PDF
             </button>
             <!-- Volver al dashboard -->
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary rounded-pill shadow-sm">
-                <i class="fas fa-arrow-left me-2"></i> Dashboard
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary rounded-3 shadow-sm d-flex align-items-center">
+                <i class="fas fa-arrow-left me-2"></i> Volver
             </a>
         </div>
     </div>
 
-    <!-- ==================== FILTROS ==================== -->
-    <div class="card shadow-sm rounded-4 mb-4">
+    <!-- ==================== TARJETAS RESUMEN ==================== -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-primary shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Ventas</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ ventas|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-success shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Ingresos Totales</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-info shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Promedio por Venta</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">
+                                ${{ "%.2f"|format(total/(ventas|length) if ventas|length > 0 else 0) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-warning shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Ventas Hoy</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">
+                                {% set hoy = ventas|selectattr('fecha')|list %}
+                                {{ hoy|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== FILTROS MEJORADOS ==================== -->
+    <div class="card shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="m-0"><i class="fas fa-filter me-2"></i>Filtros de Búsqueda</h5>
+        </div>
         <div class="card-body">
             <form method="GET" action="{{ url_for('admin.ventas') }}" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="usuario" class="form-label">Buscar por usuario</label>
+                <div class="col-md-3">
+                    <label for="usuario" class="form-label small fw-bold">Buscar por cliente/vendedor</label>
                     <input type="text" name="usuario" id="usuario" class="form-control" placeholder="Nombre o correo" value="{{ request.args.get('usuario', '') }}">
                 </div>
-                <div class="col-md-3">
-                    <label for="fecha_inicio" class="form-label">Desde</label>
+                <div class="col-md-2">
+                    <label for="fecha_inicio" class="form-label small fw-bold">Desde</label>
                     <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ request.args.get('fecha_inicio', '') }}">
                 </div>
-                <div class="col-md-3">
-                    <label for="fecha_fin" class="form-label">Hasta</label>
+                <div class="col-md-2">
+                    <label for="fecha_fin" class="form-label small fw-bold">Hasta</label>
                     <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ request.args.get('fecha_fin', '') }}">
                 </div>
-                <div class="col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i> Filtrar
+                <div class="col-md-2">
+                    <label for="min_total" class="form-label small fw-bold">Mínimo Total</label>
+                    <input type="number" name="min_total" id="min_total" class="form-control" placeholder="$0.00" step="0.01" value="{{ request.args.get('min_total', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="max_total" class="form-label small fw-bold">Máximo Total</label>
+                    <input type="number" name="max_total" id="max_total" class="form-control" placeholder="$0.00" step="0.01" value="{{ request.args.get('max_total', '') }}">
+                </div>
+                <div class="col-md-1 d-flex gap-2 flex-column">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Buscar
                     </button>
-                    <a href="{{ url_for('admin.ventas') }}" class="btn btn-outline-secondary w-100">
-                        <i class="fas fa-undo"></i> Todos
+                    <a href="{{ url_for('admin.ventas') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-1"></i> Limpiar
                     </a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ==================== TABLA DE VENTAS ==================== -->
-    <div class="card shadow-lg rounded-4 mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>Listado de Ventas</h5>
+    <!-- ==================== TABLA DE VENTAS MEJORADA ==================== -->
+    <div class="card shadow-lg rounded-3 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="m-0"><i class="fas fa-list me-2"></i>Listado de Ventas</h5>
+            <span class="badge bg-primary rounded-pill">{{ ventas|length }} registros</span>
+        </div>
+        <div class="card-body p-0">
             <div class="table-responsive" style="max-height: 450px; overflow-y:auto;">
-                <table class="table align-middle table-hover" id="tabla-ventas">
-                    <thead class="table-dark text-center">
+                <table class="table align-middle table-hover mb-0" id="tabla-ventas">
+                    <thead class="table-light">
                         <tr>
-                            <th>ID Venta</th>
+                            <th class="ps-4">ID Venta</th>
                             <th>Fecha</th>
                             <th>Cliente</th>
                             <th>Vendedor</th>
-                            <th>Total</th>
+                            <th class="text-end">Total</th>
                             <th>Detalles</th>
-                            <th style="width: 150px;">Acciones</th>
+                            <th class="text-center pe-4" style="width: 150px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for venta in ventas %}
-                            <tr>
-                                <td class="text-center">{{ venta.id }}</td>
-                                <td class="text-center">{{ venta.fecha.strftime("%d/%m/%Y %H:%M") }}</td>
-                                <td>{{ venta.cliente.nombre }}</td>
-                                <td>{{ venta.vendedor.nombre }}</td>
-                                <td class="fw-bold text-center">${{ "%.2f"|format(venta.total) }}</td>
-                                <td style="white-space: pre-line;">
-                                    {% if venta.detalles %}
-                                        {% for detalle in venta.detalles %}
-                                            {% if detalle.producto %}
-                                                • {{ detalle.producto.nombre }}  
-                                                  ({{ detalle.cantidad }} x ${{ "%.2f"|format(detalle.precio_unitario) }})  
-                                                  = ${{ "%.2f"|format(detalle.subtotal) }}
-                                            {% else %}
-                                                • {{ detalle.descripcion }}  
-                                                  ({{ detalle.cantidad }} x ${{ "%.2f"|format(detalle.precio_unitario) }})  
-                                                  = ${{ "%.2f"|format(detalle.subtotal) }}
-                                            {% endif %}
-                                            {% if not loop.last %}\n{% endif %}
-                                        {% endfor %}
-                                    {% else %}
-                                        Sin productos
-                                    {% endif %}
+                            <tr class="border-bottom">
+                                <td class="fw-bold ps-4">#{{ venta.id }}</td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-semibold">{{ venta.fecha.strftime("%d/%m/%Y") }}</span>
+                                        <small class="text-muted">{{ venta.fecha.strftime("%H:%M") }}</small>
+                                    </div>
                                 </td>
-                                <td class="text-center">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-user text-dark"></i>
+                                        </div>
+                                        <div>{{ venta.cliente.nombre }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info bg-opacity-10 text-info">{{ venta.vendedor.nombre }}</span>
+                                </td>
+                                <td class="fw-bold text-end">${{ "%.2f"|format(venta.total) }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="popover" data-bs-html="true" 
+                                        data-bs-title="Detalles de Venta #{{ venta.id }}" 
+                                        data-bs-content="
+                                            <div class='text-start'>
+                                                {% if venta.detalles %}
+                                                    {% for detalle in venta.detalles %}
+                                                        <div class='border-bottom pb-2 mb-2'>
+                                                            {% if detalle.producto %}
+                                                                <div class='fw-bold'>{{ detalle.producto.nombre }}</div>
+                                                            {% else %}
+                                                                <div class='fw-bold'>{{ detalle.descripcion }}</div>
+                                                            {% endif %}
+                                                            <div class='d-flex justify-content-between small'>
+                                                                <span>{{ detalle.cantidad }} x ${{ '%.2f'|format(detalle.precio_unitario) }}</span>
+                                                                <span class='fw-semibold'>${{ '%.2f'|format(detalle.subtotal) }}</span>
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <div class='text-muted'>Sin productos</div>
+                                                {% endif %}
+                                            </div>
+                                        ">
+                                        <i class="fas fa-eye me-1"></i> Ver
+                                    </button>
+                                </td>
+                                <td class="text-center pe-4">
                                     <div class="d-flex justify-content-center flex-wrap gap-1">
-                                        <a href="{{ url_for('admin.editar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i> Editar
+                                        <a href="{{ url_for('admin.editar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit">Editar</i>
                                         </a>
-                                        <form method="POST" action="{{ url_for('admin.eliminar_venta', venta_id=venta.id) }}" onsubmit="return confirm('¿Eliminar esta venta?');">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i> Eliminar
+                                        <form method="POST" action="{{ url_for('admin.eliminar_venta', venta_id=venta.id) }}" onsubmit="return confirm('¿Está seguro de eliminar esta venta? Esta acción no se puede deshacer.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash">Eliminar</i>
                                             </button>
                                         </form>
                                     </div>
@@ -116,7 +225,10 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="7" class="text-center text-muted">No hay ventas registradas.</td>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>No hay ventas registradas.</p>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -125,88 +237,126 @@
         </div>
     </div>
 
-    <!-- ==================== TOTAL ==================== -->
-    <div class="alert alert-success shadow-sm fs-5 fw-bold text-center">
-        Ingresos Totales: ${{ "%.2f"|format(total) }}
-    </div>
-</div>
-
-<!-- ==================== MODAL NUEVA VENTA ==================== -->
-<div class="modal fade" id="modalNuevaVenta" tabindex="-1" aria-hidden="true" style="width:1350px;">
-  <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 60%; margin: auto;">
-    <div class="modal-content rounded-4 shadow">
-      
-      <!-- HEADER -->
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title"><i class="fas fa-plus me-2"></i> Registrar Nueva Venta</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <!-- FORMULARIO -->
-      <form method="POST" action="{{ url_for('admin.nueva_venta') }}">
-        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
-          <!-- Cliente -->
-          <div class="mb-3">
-            <label for="cliente_id" class="form-label">Cliente</label>
-            <select name="cliente_id" id="cliente_id" class="form-select" required>
-              <option value="">Seleccione un cliente</option>
-              {% for cliente in clientes %}
-                <option value="{{ cliente.id }}">{{ cliente.nombre }} ({{ cliente.correo }})</option>
-              {% endfor %}
-            </select>
-          </div>
-          <!-- Vendedor -->
-          <div class="mb-3">
-            <label for="vendedor_id" class="form-label">Vendedor</label>
-            <select name="vendedor_id" id="vendedor_id" class="form-select" required>
-              <option value="">Seleccione un vendedor</option>
-              {% for vendedor in vendedores %}
-                <option value="{{ vendedor.id }}">{{ vendedor.nombre }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <!-- Productos dinámicos -->
-          <div class="mb-3">
-            <label class="form-label">Productos</label>
-            <div id="productos-container">
-              <div class="row mb-2 producto-row">
-                <div class="col-md-5">
-                  <select name="productos[0][id]" class="form-select">
-                    <option value="">Seleccione un producto</option>
-                    {% for producto in productos %}
-                      <option value="{{ producto.id }}">{{ producto.nombre }} - ${{ "%.2f"|format(producto.precio) }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <div class="col-md-3">
-                  <input type="number" name="productos[0][cantidad]" class="form-control" min="1" value="1">
-                </div>
-                <div class="col-md-3">
-                  <input type="number" name="productos[0][precio_unitario]" class="form-control" step="0.01" placeholder="Precio unitario">
-                </div>
-                <div class="col-md-1 d-flex align-items-center justify-content-center">
-                  <button type="button" class="btn btn-danger btn-sm eliminar-producto">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
+    
+<!-- ==================== MODAL NUEVA VENTA MEJORADO ==================== -->
+<div class="modal fade" id="modalNuevaVenta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow">
+            
+            <!-- HEADER -->
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="fas fa-cash-register me-2"></i> Registrar Nueva Venta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <button type="button" id="agregar-producto" class="btn btn-outline-dark btn-sm mt-2">
-              <i class="fas fa-plus"></i> Agregar producto
-            </button>
-          </div>
+
+            <!-- FORMULARIO -->
+            <form method="POST" action="{{ url_for('admin.nueva_venta') }}">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Información del Cliente</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="cliente_id" class="form-label">Seleccionar Cliente</label>
+                                        <select name="cliente_id" id="cliente_id" class="form-select" required>
+                                            <option value="">Seleccione un cliente</option>
+                                            {% for cliente in clientes %}
+                                                <option value="{{ cliente.id }}">{{ cliente.nombre }} ({{ cliente.correo }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-user-tie me-2"></i>Información del Vendedor</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="vendedor_id" class="form-label">Seleccionar Vendedor</label>
+                                        <select name="vendedor_id" id="vendedor_id" class="form-select" required>
+                                            <option value="">Seleccione un vendedor</option>
+                                            {% for vendedor in vendedores %}
+                                                <option value="{{ vendedor.id }}">{{ vendedor.nombre }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Productos -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fas fa-boxes me-2"></i>Productos de la Venta</h6>
+                            <button type="button" id="agregar-producto" class="btn btn-sm btn-outline-dark">
+                                <i class="fas fa-plus me-1"></i> Agregar Producto
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="productos-container">
+                                <div class="row mb-2 producto-row align-items-end">
+                                    <div class="col-md-5">
+                                        <label class="form-label small fw-bold">Producto</label>
+                                        <select name="productos[0][id]" class="form-select">
+                                            <option value="">Seleccione un producto</option>
+                                            {% for producto in productos %}
+                                                <option value="{{ producto.id }}" data-precio="{{ producto.precio }}">
+                                                    {{ producto.nombre }} - ${{ "%.2f"|format(producto.precio) }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small fw-bold">Cantidad</label>
+                                        <input type="number" name="productos[0][cantidad]" class="form-control cantidad" min="1" value="1">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small fw-bold">Precio Unitario</label>
+                                        <input type="number" name="productos[0][precio_unitario]" class="form-control precio" step="0.01" placeholder="0.00">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small fw-bold">Subtotal</label>
+                                        <input type="text" class="form-control subtotal" readonly placeholder="$0.00">
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-center justify-content-center">
+                                        <button type="button" class="btn btn-danger btn-sm eliminar-producto">
+                                            <i class="fas fa-trash">Eliminar</i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Total -->
+                            <div class="row mt-4">
+                                <div class="col-md-8"></div>
+                                <div class="col-md-4">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                        <span class="fw-bold">TOTAL:</span>
+                                        <span id="total-venta" class="fw-bold fs-5 text-success">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Guardar Venta
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="fas fa-times"></i> Cancelar
-          </button>
-          <button type="submit" class="btn btn-success">
-            <i class="fas fa-save me-1"></i> Guardar Venta
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 
 <!-- ==================== LIBRERÍAS ==================== -->
@@ -214,9 +364,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-<!-- ==================== JS ==================== -->
+<!-- ==================== JS MEJORADO ==================== -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    // Inicializar popovers de Bootstrap
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+    
     const btnExcel = document.getElementById("btn-exportar-excel");
     const btnPDF = document.getElementById("btn-exportar-pdf");
 
@@ -250,9 +404,20 @@ document.addEventListener("DOMContentLoaded", () => {
     btnPDF.addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF("landscape");
-        doc.setFontSize(14);
-        doc.text("Reporte de Ventas", 14, 15);
-
+        doc.setFontSize(16);
+        doc.setTextColor(40, 40, 40);
+        doc.text("Reporte de Ventas - " + new Date().toLocaleDateString(), 14, 15);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        
+        // Obtener texto de filtros aplicados
+        let filtrosTexto = "Filtros: ";
+        if (document.getElementById("usuario").value) filtrosTexto += `Usuario: ${document.getElementById("usuario").value} `;
+        if (document.getElementById("fecha_inicio").value) filtrosTexto += `Desde: ${document.getElementById("fecha_inicio").value} `;
+        if (document.getElementById("fecha_fin").value) filtrosTexto += `Hasta: ${document.getElementById("fecha_fin").value} `;
+        
+        doc.text(filtrosTexto, 14, 22);
+        
         let filas = [];
         document.querySelectorAll("#tabla-ventas tbody tr").forEach(fila => {
             const celdas = fila.querySelectorAll("td");
@@ -263,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     celdas[2].innerText.trim(),
                     celdas[3].innerText.trim(),
                     celdas[4].innerText.trim(),
-                    celdas[5].innerText.trim()
+                    celdas[5].innerText.trim().replace(/\n/g, ', ')
                 ]);
             }
         });
@@ -272,40 +437,147 @@ document.addEventListener("DOMContentLoaded", () => {
             head: [["ID Venta", "Fecha", "Cliente", "Vendedor", "Total", "Detalles"]],
             body: filas,
             theme: "grid",
-            headStyles: { fillColor: [40, 40, 40], halign: "center" },
-            bodyStyles: { fontSize: 9, valign: "middle" },
-            startY: 25,
-            styles: { overflow: "linebreak", cellWidth: "wrap" },
-            columnStyles: { 5: { cellWidth: 100 } }
+            headStyles: { 
+                fillColor: [58, 58, 58],
+                textColor: [255, 255, 255],
+                halign: "center",
+                fontStyle: "bold"
+            },
+            bodyStyles: { 
+                fontSize: 9, 
+                valign: "middle",
+                cellPadding: 3
+            },
+            startY: 30,
+            styles: { 
+                overflow: "linebreak", 
+                cellWidth: "wrap"
+            },
+            columnStyles: { 
+                0: { cellWidth: 25 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 40 },
+                3: { cellWidth: 40 },
+                4: { cellWidth: 25 },
+                5: { cellWidth: 70 }
+            },
+            margin: { top: 30 }
         });
 
-        doc.save("ventas.pdf");
+        // Pie de página
+        const pageCount = doc.internal.getNumberOfPages();
+        for(let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+        }
+
+        doc.save("reporte_ventas.pdf");
     });
 
-    // ==================== PRODUCTOS DINÁMICOS ====================
+    // ==================== PRODUCTOS DINÁMICOS EN MODAL ====================
     let index = 1;
     const container = document.getElementById("productos-container");
     const btnAgregar = document.getElementById("agregar-producto");
+    
+    // Función para calcular subtotales y total
+    function calcularTotales() {
+        let totalVenta = 0;
+        
+        document.querySelectorAll(".producto-row").forEach(row => {
+            const cantidad = parseFloat(row.querySelector(".cantidad").value) || 0;
+            const precio = parseFloat(row.querySelector(".precio").value) || 0;
+            const subtotal = cantidad * precio;
+            
+            row.querySelector(".subtotal").value = `$${subtotal.toFixed(2)}`;
+            totalVenta += subtotal;
+        });
+        
+        document.getElementById("total-venta").textContent = `$${totalVenta.toFixed(2)}`;
+    }
+    
+    // Event listeners para cambios en cantidad y precio
+    document.addEventListener("input", function(e) {
+        if (e.target.classList.contains("cantidad") || e.target.classList.contains("precio")) {
+            calcularTotales();
+        }
+    });
+    
+    // Event listener para cambio de producto (auto-completar precio)
+    document.addEventListener("change", function(e) {
+        if (e.target.tagName === "SELECT" && e.target.name.includes("productos")) {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            const precioInput = e.target.closest(".producto-row").querySelector(".precio");
+            
+            if (selectedOption && selectedOption.dataset.precio) {
+                precioInput.value = selectedOption.dataset.precio;
+                calcularTotales();
+            }
+        }
+    });
 
+    // Agregar nuevo producto
     btnAgregar.addEventListener("click", () => {
         const row = document.querySelector(".producto-row").cloneNode(true);
         row.querySelectorAll("select, input").forEach(input => {
             const name = input.getAttribute("name");
             if (name) input.setAttribute("name", name.replace(/\[\d+\]/, `[${index}]`));
-            if (input.tagName === "INPUT") input.value = "";
+            if (input.tagName === "INPUT" && !input.classList.contains("subtotal")) {
+                input.value = "";
+            } else if (input.classList.contains("subtotal")) {
+                input.value = "$0.00";
+            }
         });
-        row.querySelector(".eliminar-producto").addEventListener("click", () => row.remove());
+        row.querySelector(".eliminar-producto").addEventListener("click", () => {
+            if (document.querySelectorAll(".producto-row").length > 1) {
+                row.remove();
+                calcularTotales();
+            }
+        });
         container.appendChild(row);
         index++;
     });
 
+    // Eliminar producto
     document.querySelectorAll(".eliminar-producto").forEach(btn => {
         btn.addEventListener("click", function() {
             if (document.querySelectorAll(".producto-row").length > 1) {
                 this.closest(".producto-row").remove();
+                calcularTotales();
             }
         });
     });
+    
+    // Inicializar cálculo de totales
+    calcularTotales();
 });
 </script>
+
+<style>
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+.table thead th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+.btn {
+    border-radius: 0.35rem;
+}
+.table-hover tbody tr:hover {
+    background-color: rgba(58, 59, 69, 0.05);
+}
+.border-start {
+    border-left: 0.25rem solid !important;
+}
+</style>
 {% endblock %}

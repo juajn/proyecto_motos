@@ -218,7 +218,39 @@ def listar_usuarios():
         abort(403)
     usuarios = Usuario.query.all()
     return render_template('admin/usuarios/index.html', usuarios=usuarios)
+@admin_bp.route('/usuarios/crear', methods=['GET', 'POST'])
+@login_required
+def crear_usuario():
+    if current_user.rol != 'admin':
+        abort(403)
+    if request.method == 'POST':
+        correo = request.form['correo']
+        contraseña = request.form['contraseña']
+        rol = request.form['rol']
+        nombre = request.form['nombre']
+        archivo = request.files.get('imagen')
 
+        if Usuario.query.filter_by(correo=correo).first():
+            flash('El correo ya está registrado.', 'danger')
+            return redirect(url_for('admin.usuarios'))
+
+        hash_contraseña = bcrypt.generate_password_hash(contraseña).decode('utf-8')
+        nombre_imagen = save_uploaded_file(archivo)
+
+        nuevo_usuario = Usuario(
+            correo=correo,
+            contraseña=hash_contraseña,
+            rol=rol,
+            nombre=nombre,
+            imagen=nombre_imagen
+        )
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+
+        flash('Usuario creado correctamente.', 'success')
+        return redirect(url_for('admin.listar_usuarios'))
+
+    return render_template('admin/usuarios/crear.html')
 @admin_bp.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_usuario(id):
@@ -334,8 +366,24 @@ def eliminar_producto(id):
 def listar_trabajos():
     if current_user.rol != 'admin':
         abort(403)
-
-    trabajos = Trabajo.query.all()
+    
+    # Obtener filtro de estado si existe
+    estado = request.args.get('estado')
+    
+    # Aplicar filtro si se especificó un estado
+    if estado:
+        trabajos = Trabajo.query.filter_by(estado=estado).all()
+    else:
+        trabajos = Trabajo.query.all()
+    
+    # Obtener estadísticas para los paneles
+    total_trabajos = Trabajo.query.count()
+    trabajos_pagados = Trabajo.query.filter_by(estado='Pagado').count()
+    trabajos_pendientes = Trabajo.query.filter_by(estado='Pendiente').count()
+    trabajos_en_proceso = Trabajo.query.filter_by(estado='En proceso').count()
+    trabajos_completados = Trabajo.query.filter_by(estado='Completado').count()
+    
+    # Obtener mecánicos y clientes
     mecanicos = Usuario.query.filter_by(rol='mecanico').all()
     clientes = Usuario.query.filter_by(rol='usuario').all()
 
@@ -343,9 +391,13 @@ def listar_trabajos():
         'admin/trabajos/index.html',
         trabajos=trabajos,
         mecanicos=mecanicos,
-        clientes=clientes
+        clientes=clientes,
+        total_trabajos=total_trabajos,
+        trabajos_pagados=trabajos_pagados,
+        trabajos_pendientes=trabajos_pendientes,
+        trabajos_en_proceso=trabajos_en_proceso,
+        trabajos_completados=trabajos_completados
     )
-
 
 @admin_bp.route('/trabajos/crear', methods=['GET', 'POST'])
 @login_required
