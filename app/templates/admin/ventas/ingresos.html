@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Ventas{% endblock %}
+{% block title %}Ventas y Gastos{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-4 my-4">
@@ -9,14 +9,17 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark mb-1">
-                <i class="fas fa-cash-register me-2"></i> Gestionar Ventas
+                <i class="fas fa-cash-register me-2"></i> Gestionar Ventas y Gastos
             </h2>
-            <p class="text-muted mb-0">Administra y realiza un seguimiento de todas las transacciones</p>
         </div>
         <div class="d-flex gap-2">
             <!-- Botón agregar venta -->
             <button class="btn btn-success rounded-3 shadow-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
                 <i class="fas fa-plus me-2"></i> Nueva Venta
+            </button>
+            <!-- Botón agregar gastos -->
+            <button class="btn btn-outline-danger rounded-3 shadow-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalNuevoGasto">
+                <i class="fas fa-plus me-2"></i> Nuevo Gasto
             </button>
             <!-- Exportar Excel -->
             <button id="btn-exportar-excel" class="btn btn-outline-success rounded-3 shadow-sm d-flex align-items-center">
@@ -56,10 +59,25 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs fw-bold text-success text-uppercase mb-1">Ingresos Totales</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total) }}</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_ventas) }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-danger shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Gastos Totales</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_gastos) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -70,31 +88,11 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Promedio por Venta</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">
-                                ${{ "%.2f"|format(total/(ventas|length) if ventas|length > 0 else 0) }}
-                            </div>
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Balance Neto</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_ventas - total_gastos) }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-warning shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Ventas Hoy</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">
-                                {% set hoy = ventas|selectattr('fecha')|list %}
-                                {{ hoy|length }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -131,112 +129,254 @@
                 </div>
                 <div class="col-md-1 d-flex gap-2 flex-column">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i> Buscar
+                        <i class="fas fa-search me-1"></i> Busca
                     </button>
                     <a href="{{ url_for('admin.ventas') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-undo me-1"></i> Limpiar
+                        <i class="fas fa-undo me-1"></i> Limpia
                     </a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ==================== TABLA DE VENTAS MEJORADA ==================== -->
-    <div class="card shadow-lg rounded-3 mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="m-0"><i class="fas fa-list me-2"></i>Listado de Ventas</h5>
-            <span class="badge bg-primary rounded-pill">{{ ventas|length }} registros</span>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 450px; overflow-y:auto;">
-                <table class="table align-middle table-hover mb-0" id="tabla-ventas">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">ID Venta</th>
-                            <th>Fecha</th>
-                            <th>Cliente</th>
-                            <th>Vendedor</th>
-                            <th class="text-end">Total</th>
-                            <th>Detalles</th>
-                            <th class="text-center pe-4" style="width: 150px;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for venta in ventas %}
-                            <tr class="border-bottom">
-                                <td class="fw-bold ps-4">#{{ venta.id }}</td>
-                                <td>
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-semibold">{{ venta.fecha.strftime("%d/%m/%Y") }}</span>
-                                        <small class="text-muted">{{ venta.fecha.strftime("%H:%M") }}</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
-                                            <i class="fas fa-user text-dark"></i>
-                                        </div>
-                                        <div>{{ venta.cliente.nombre }}</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info bg-opacity-10 text-info">{{ venta.vendedor.nombre }}</span>
-                                </td>
-                                <td class="fw-bold text-end">${{ "%.2f"|format(venta.total) }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="popover" data-bs-html="true" 
-                                        data-bs-title="Detalles de Venta #{{ venta.id }}" 
-                                        data-bs-content="
-                                            <div class='text-start'>
-                                                {% if venta.detalles %}
-                                                    {% for detalle in venta.detalles %}
-                                                        <div class='border-bottom pb-2 mb-2'>
-                                                            {% if detalle.producto %}
-                                                                <div class='fw-bold'>{{ detalle.producto.nombre }}</div>
-                                                            {% else %}
-                                                                <div class='fw-bold'>{{ detalle.descripcion }}</div>
-                                                            {% endif %}
-                                                            <div class='d-flex justify-content-between small'>
-                                                                <span>{{ detalle.cantidad }} x ${{ '%.2f'|format(detalle.precio_unitario) }}</span>
-                                                                <span class='fw-semibold'>${{ '%.2f'|format(detalle.subtotal) }}</span>
-                                                            </div>
-                                                        </div>
-                                                    {% endfor %}
-                                                {% else %}
-                                                    <div class='text-muted'>Sin productos</div>
-                                                {% endif %}
+    <!-- ==================== TABS PARA VENTAS Y GASTOS ==================== -->
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active ventas-tab" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#ventas-tab-pane" type="button" role="tab" aria-controls="ventas-tab-pane" aria-selected="true">
+            <i class="fas fa-shopping-cart me-2"></i>Ventas
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link gastos-tab" id="gastos-tab" data-bs-toggle="tab" data-bs-target="#gastos-tab-pane" type="button" role="tab" aria-controls="gastos-tab-pane" aria-selected="false">
+            <i class="fas fa-money-bill-wave me-2"></i>Gastos
+        </button>
+    </li>
+</ul>
+
+    <div class="tab-content" id="myTabContent">
+        <!-- ==================== TABLA DE VENTAS MEJORADA ==================== -->
+        <div class="tab-pane fade show active" id="ventas-tab-pane" role="tabpanel" aria-labelledby="ventas-tab" tabindex="0">
+            <div class="card shadow-lg rounded-3 mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-list me-2"></i>Listado de Ventas</h5>
+                    <span class="badge bg-primary rounded-pill">{{ ventas|length }} registros</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 450px; overflow-y:auto;">
+                        <table class="table align-middle table-hover mb-0" id="tabla-ventas">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID Venta</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Vendedor</th>
+                                    <th class="text-end">Total</th>
+                                    <th>Detalles</th>
+                                    <th class="text-center pe-4" style="width: 150px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for venta in ventas %}
+                                    <tr class="border-bottom">
+                                        <td class="fw-bold ps-4">#{{ venta.id }}</td>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold">{{ venta.fecha.strftime("%d/%m/%Y") }}</span>
+                                                <small class="text-muted">{{ venta.fecha.strftime("%H:%M") }}</small>
                                             </div>
-                                        ">
-                                        <i class="fas fa-eye me-1"></i> Ver
-                                    </button>
-                                </td>
-                                <td class="text-center pe-4">
-                                    <div class="d-flex justify-content-center flex-wrap gap-1">
-                                        <a href="{{ url_for('admin.editar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit">Editar</i>
-                                        </a>
-                                        <form method="POST" action="{{ url_for('admin.eliminar_venta', venta_id=venta.id) }}" onsubmit="return confirm('¿Está seguro de eliminar esta venta? Esta acción no se puede deshacer.');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash">Eliminar</i>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-user text-dark"></i>
+                                                </div>
+                                                <div>{{ venta.cliente.nombre }}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info bg-opacity-10 text-info">{{ venta.vendedor.nombre }}</span>
+                                        </td>
+                                        <td class="fw-bold text-end">${{ "%.2f"|format(venta.total) }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="popover" data-bs-html="true" 
+                                                data-bs-title="Detalles de Venta #{{ venta.id }}" 
+                                                data-bs-content="
+                                                    <div class='text-start'>
+                                                        {% if venta.detalles %}
+                                                            {% for detalle in venta.detalles %}
+                                                                <div class='border-bottom pb-2 mb-2'>
+                                                                    {% if detalle.producto %}
+                                                                        <div class='fw-bold'>{{ detalle.producto.nombre }}</div>
+                                                                    {% else %}
+                                                                        <div class='fw-bold'>{{ detalle.descripcion }}</div>
+                                                                    {% endif %}
+                                                                    <div class='d-flex justify-content-between small'>
+                                                                        <span>{{ detalle.cantidad }} x ${{ '%.2f'|format(detalle.precio_unitario) }}</span>
+                                                                        <span class='fw-semibold'>${{ '%.2f'|format(detalle.subtotal) }}</span>
+                                                                    </div>
+                                                                </div>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            <div class='text-muted'>Sin productos</div>
+                                                        {% endif %}
+                                                    </div>
+                                                ">
+                                                <i class="fas fa-eye me-1"></i> Ver
                                             </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox fa-3x mb-3"></i>
-                                    <p>No hay ventas registradas.</p>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                        </td>
+                                        <td class="text-center pe-4">
+                                            <div class="d-flex justify-content-center flex-wrap gap-1">
+                                                <a href="{{ url_for('admin.editar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </a>
+                                                <form method="POST" action="{{ url_for('admin.eliminar_venta', venta_id=venta.id) }}" onsubmit="return confirm('¿Está seguro de eliminar esta venta? Esta acción no se puede deshacer.');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <p>No hay ventas registradas.</p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TABLA DE GASTOS ==================== -->
+        <div class="tab-pane fade" id="gastos-tab-pane" role="tabpanel" aria-labelledby="gastos-tab" tabindex="0">
+            <div class="card shadow-lg rounded-3 mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-list me-2"></i>Listado de Gastos</h5>
+                    <span class="badge bg-danger rounded-pill">{{ gastos|length }} registros</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 450px; overflow-y:auto;">
+                        <table class="table align-middle table-hover mb-0" id="tabla-gastos">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Categoría</th>
+                                    <th class="text-end">Monto</th>
+                                    <th class="text-center pe-4" style="width: 150px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for gasto in gastos %}
+                                    <tr class="border-bottom">
+                                        <td class="fw-bold ps-4">#{{ gasto.id }}</td>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold">{{ gasto.fecha.strftime("%d/%m/%Y") }}</span>
+                                            </div>
+                                        </td>
+                                        <td>{{ gasto.descripcion }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ gasto.categoria }}</span>
+                                        </td>
+                                        <td class="fw-bold text-end text-danger">${{ "%.2f"|format(gasto.monto) }}</td>
+                                        <td class="text-center pe-4">
+                                            <div class="d-flex justify-content-center flex-wrap gap-1">
+                                                <a href="{{ url_for('admin.editar_gasto', gasto_id=gasto.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </a>
+                                                <form method="POST" action="{{ url_for('admin.eliminar_gasto', gasto_id=gasto.id) }}" onsubmit="return confirm('¿Está seguro de eliminar este gasto? Esta acción no se puede deshacer.');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <p>No hay gastos registrados.</p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    
+<!-- ==================== MODAL NUEVO GASTO ==================== -->
+<div class="modal fade" id="modalNuevoGasto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow">
+            
+            <!-- HEADER -->
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-wallet me-2"></i> Registrar Nuevo Gasto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
 
+            <!-- FORMULARIO -->
+            <form method="POST" action="{{ url_for('admin.nuevo_gasto') }}">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <!-- Descripción -->
+                        <div class="col-md-12 mb-3">
+                            <label for="descripcion" class="form-label">Descripción del Gasto</label>
+                            <textarea name="descripcion" class="form-control" rows="3" required></textarea>
+                        </div>
+
+                        <!-- Monto -->
+                        <div class="col-md-6 mb-3">
+                            <label for="monto" class="form-label">Monto</label>
+                            <input type="number" name="monto" class="form-control" step="0.01" required>
+                        </div>
+
+                        <!-- Fecha -->
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha" class="form-label">Fecha</label>
+                            <input type="date" name="fecha" class="form-control" required>
+                        </div>
+
+                        <!-- Categoría -->
+                        <div class="col-md-6 mb-3">
+                            <label for="categoria" class="form-label">Categoría</label>
+                            <select name="categoria" class="form-select" required>
+                                <option value="">Seleccionar categoría</option>
+                                <option value="Alquiler">Alquiler</option>
+                                <option value="Servicios">Servicios</option>
+                                <option value="Nómina">Nómina</option>
+                                <option value="Suministros">Suministros</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-save me-1"></i> Guardar Gasto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
     
 <!-- ==================== MODAL NUEVA VENTA MEJORADO ==================== -->
 <div class="modal fade" id="modalNuevaVenta" tabindex="-1" aria-hidden="true">
@@ -261,10 +401,10 @@
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <label for="cliente_id" class="form-label">Seleccionar Cliente</label>
-                                        <select name="cliente_id" id="cliente_id" class="form-select" required>
-                                            <option value="">Seleccione un cliente</option>
+                                        <select name="cliente_id" class="form-select" required>
+                                            <option value="">Seleccionar cliente</option>
                                             {% for cliente in clientes %}
-                                                <option value="{{ cliente.id }}">{{ cliente.nombre }} ({{ cliente.correo }})</option>
+                                                <option value="{{ cliente.id }}">{{ cliente.nombre }} - {{ cliente.correo }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -279,10 +419,10 @@
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <label for="vendedor_id" class="form-label">Seleccionar Vendedor</label>
-                                        <select name="vendedor_id" id="vendedor_id" class="form-select" required>
-                                            <option value="">Seleccione un vendedor</option>
+                                        <select name="vendedor_id" class="form-select" required>
+                                            <option value="">Seleccionar vendedor</option>
                                             {% for vendedor in vendedores %}
-                                                <option value="{{ vendedor.id }}">{{ vendedor.nombre }}</option>
+                                                <option value="{{ vendedor.id }}">{{ vendedor.nombre }} - {{ vendedor.correo }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -303,15 +443,17 @@
                             <div id="productos-container">
                                 <div class="row mb-2 producto-row align-items-end">
                                     <div class="col-md-5">
-                                        <label class="form-label small fw-bold">Producto</label>
-                                        <select name="productos[0][id]" class="form-select">
+                                        <label class="form-label small fw-bold">Producto/Servicio</label>
+                                        <select name="productos[0][id]" class="form-select producto-select">
                                             <option value="">Seleccione un producto</option>
                                             {% for producto in productos %}
                                                 <option value="{{ producto.id }}" data-precio="{{ producto.precio }}">
                                                     {{ producto.nombre }} - ${{ "%.2f"|format(producto.precio) }}
                                                 </option>
                                             {% endfor %}
+                                            <option value="">[Agregar servicio]</option>
                                         </select>
+                                        <input type="text" name="productos[0][descripcion]" class="form-control mt-2 descripcion-servicio" placeholder="Descripción del servicio" style="display: none;">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label small fw-bold">Cantidad</label>
@@ -327,7 +469,7 @@
                                     </div>
                                     <div class="col-md-1 d-flex align-items-center justify-content-center">
                                         <button type="button" class="btn btn-danger btn-sm eliminar-producto">
-                                            <i class="fas fa-trash">Eliminar</i>
+                                            <i class="fas fa-trash"></i> Eliminar
                                         </button>
                                     </div>
                                 </div>
@@ -376,37 +518,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ==================== EXPORTAR A EXCEL ====================
     btnExcel.addEventListener("click", () => {
-        const filas = document.querySelectorAll("#tabla-ventas tbody tr");
-        let data = [["ID Venta", "Fecha", "Cliente", "Vendedor", "Total", "Detalles"]];
-
-        filas.forEach(fila => {
-            const celdas = fila.querySelectorAll("td");
-            if (celdas.length > 0) {
-                let row = [
-                    celdas[0].innerText.trim(),
-                    celdas[1].innerText.trim(),
-                    celdas[2].innerText.trim(),
-                    celdas[3].innerText.trim(),
-                    celdas[4].innerText.trim(),
-                    celdas[5].innerText.trim()
-                ];
-                data.push(row);
-            }
-        });
+        // Determinar qué tabla está activa (ventas o gastos)
+        const ventasTabActive = document.getElementById('ventas-tab').classList.contains('active');
+        const tableId = ventasTabActive ? 'tabla-ventas' : 'tabla-gastos';
+        const fileName = ventasTabActive ? 'ventas.xlsx' : 'gastos.xlsx';
+        
+        const filas = document.querySelectorAll(`#${tableId} tbody tr`);
+        let data = [];
+        
+        if (ventasTabActive) {
+            data = [["ID Venta", "Fecha", "Cliente", "Vendedor", "Total", "Detalles"]];
+            filas.forEach(fila => {
+                const celdas = fila.querySelectorAll("td");
+                if (celdas.length > 0) {
+                    let row = [
+                        celdas[0].innerText.trim(),
+                        celdas[1].innerText.trim(),
+                        celdas[2].innerText.trim(),
+                        celdas[3].innerText.trim(),
+                        celdas[4].innerText.trim(),
+                        celdas[5].innerText.trim()
+                    ];
+                    data.push(row);
+                }
+            });
+        } else {
+            data = [["ID Gasto", "Fecha", "Descripción", "Categoría", "Monto"]];
+            filas.forEach(fila => {
+                const celdas = fila.querySelectorAll("td");
+                if (celdas.length > 0) {
+                    let row = [
+                        celdas[0].innerText.trim(),
+                        celdas[1].innerText.trim(),
+                        celdas[2].innerText.trim(),
+                        celdas[3].innerText.trim(),
+                        celdas[4].innerText.trim()
+                    ];
+                    data.push(row);
+                }
+            });
+        }
 
         let ws = XLSX.utils.aoa_to_sheet(data);
         let wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, "ventas.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, ventasTabActive ? "Ventas" : "Gastos");
+        XLSX.writeFile(wb, fileName);
     });
 
     // ==================== EXPORTAR A PDF ====================
     btnPDF.addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF("landscape");
+        
+        // Determinar qué tabla está activa (ventas o gastos)
+        const ventasTabActive = document.getElementById('ventas-tab').classList.contains('active');
+        const tableId = ventasTabActive ? 'tabla-ventas' : 'tabla-gastos';
+        const title = ventasTabActive ? "Reporte de Ventas" : "Reporte de Gastos";
+        
         doc.setFontSize(16);
         doc.setTextColor(40, 40, 40);
-        doc.text("Reporte de Ventas - " + new Date().toLocaleDateString(), 14, 15);
+        doc.text(title + " - " + new Date().toLocaleDateString(), 14, 15);
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         
@@ -419,22 +590,36 @@ document.addEventListener("DOMContentLoaded", () => {
         doc.text(filtrosTexto, 14, 22);
         
         let filas = [];
-        document.querySelectorAll("#tabla-ventas tbody tr").forEach(fila => {
+        document.querySelectorAll(`#${tableId} tbody tr`).forEach(fila => {
             const celdas = fila.querySelectorAll("td");
             if (celdas.length > 0) {
-                filas.push([
-                    celdas[0].innerText.trim(),
-                    celdas[1].innerText.trim(),
-                    celdas[2].innerText.trim(),
-                    celdas[3].innerText.trim(),
-                    celdas[4].innerText.trim(),
-                    celdas[5].innerText.trim().replace(/\n/g, ', ')
-                ]);
+                if (ventasTabActive) {
+                    filas.push([
+                        celdas[0].innerText.trim(),
+                        celdas[1].innerText.trim(),
+                        celdas[2].innerText.trim(),
+                        celdas[3].innerText.trim(),
+                        celdas[4].innerText.trim(),
+                        celdas[5].innerText.trim().replace(/\n/g, ', ')
+                    ]);
+                } else {
+                    filas.push([
+                        celdas[0].innerText.trim(),
+                        celdas[1].innerText.trim(),
+                        celdas[2].innerText.trim(),
+                        celdas[3].innerText.trim(),
+                        celdas[4].innerText.trim()
+                    ]);
+                }
             }
         });
 
+        const headers = ventasTabActive 
+            ? [["ID Venta", "Fecha", "Cliente", "Vendedor", "Total", "Detalles"]] 
+            : [["ID Gasto", "Fecha", "Descripción", "Categoría", "Monto"]];
+
         doc.autoTable({
-            head: [["ID Venta", "Fecha", "Cliente", "Vendedor", "Total", "Detalles"]],
+            head: headers,
             body: filas,
             theme: "grid",
             headStyles: { 
@@ -453,13 +638,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 overflow: "linebreak", 
                 cellWidth: "wrap"
             },
-            columnStyles: { 
+            columnStyles: ventasTabActive ? { 
                 0: { cellWidth: 25 },
                 1: { cellWidth: 30 },
                 2: { cellWidth: 40 },
                 3: { cellWidth: 40 },
                 4: { cellWidth: 25 },
                 5: { cellWidth: 70 }
+            } : {
+                0: { cellWidth: 25 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 70 },
+                3: { cellWidth: 40 },
+                4: { cellWidth: 25 }
             },
             margin: { top: 30 }
         });
@@ -473,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
             doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
         }
 
-        doc.save("reporte_ventas.pdf");
+        doc.save(ventasTabActive ? "reporte_ventas.pdf" : "reporte_gastos.pdf");
     });
 
     // ==================== PRODUCTOS DINÁMICOS EN MODAL ====================
@@ -506,12 +697,25 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Event listener para cambio de producto (auto-completar precio)
     document.addEventListener("change", function(e) {
-        if (e.target.tagName === "SELECT" && e.target.name.includes("productos")) {
+        if (e.target.classList.contains("producto-select")) {
             const selectedOption = e.target.options[e.target.selectedIndex];
             const precioInput = e.target.closest(".producto-row").querySelector(".precio");
+            const descripcionInput = e.target.closest(".producto-row").querySelector(".descripcion-servicio");
+            
+            // Mostrar/ocultar campo de descripción para servicios
+            if (selectedOption.value === "") {
+                descripcionInput.style.display = "block";
+                descripcionInput.setAttribute("required", "true");
+            } else {
+                descripcionInput.style.display = "none";
+                descripcionInput.removeAttribute("required");
+            }
             
             if (selectedOption && selectedOption.dataset.precio) {
                 precioInput.value = selectedOption.dataset.precio;
+                calcularTotales();
+            } else {
+                precioInput.value = "";
                 calcularTotales();
             }
         }
@@ -527,6 +731,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 input.value = "";
             } else if (input.classList.contains("subtotal")) {
                 input.value = "$0.00";
+            }
+            if (input.classList.contains("descripcion-servicio")) {
+                input.style.display = "none";
+                input.removeAttribute("required");
             }
         });
         row.querySelector(".eliminar-producto").addEventListener("click", () => {
@@ -555,6 +763,34 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <style>
+/* Estilos para las pestañas personalizadas */
+.nav-tabs .nav-link.ventas-tab {
+    color: #0d6efd; /* Color azul para texto inactivo */
+    background-color: #e9ecef; /* Fondo gris claro para inactivo */
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.nav-tabs .nav-link.ventas-tab.active {
+    color: #fff; /* Color blanco para texto activo */
+    background-color: #0d6efd; /* Fondo azul para activo */
+    border-color: #0d6efd #0d6efd #fff;
+}
+
+.nav-tabs .nav-link.gastos-tab {
+    color: #dc3545; /* Color rojo para texto inactivo */
+    background-color: #f8d7da; /* Fondo rojo claro para inactivo */
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.nav-tabs .nav-link.gastos-tab.active {
+    color: #fff; /* Color blanco para texto activo */
+    background-color: #dc3545; /* Fondo rojo para activo */
+    border-color: #dc3545 #dc3545 #fff;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+}    
 .avatar-sm {
     width: 32px;
     height: 32px;
@@ -578,6 +814,10 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 .border-start {
     border-left: 0.25rem solid !important;
+}
+.nav-tabs .nav-link.active {
+    border-bottom: 3px solid #0d6efd;
+    font-weight: 600;
 }
 </style>
 {% endblock %}

@@ -11,8 +11,6 @@ class Usuario(db.Model, UserMixin):
     nombre = db.Column(db.String(100), nullable=False)
     imagen = db.Column(db.String(200))
 
-    
-
 class Producto(db.Model):
     __tablename__ = "producto"
 
@@ -23,6 +21,7 @@ class Producto(db.Model):
     stock = db.Column(db.Integer, nullable=True)
     foto = db.Column(db.String(200), nullable=True)
     categoria = db.Column(db.String(100), nullable=True)
+    destacado = db.Column(db.Boolean, default=False)  # Nuevo campo para productos destacados
 
     # Relación inversa
     detalles = db.relationship("DetalleVenta", back_populates="producto")
@@ -92,3 +91,13 @@ class DetalleVenta(db.Model):
 
     venta = db.relationship("Venta", back_populates="detalles")
     producto = db.relationship("Producto", back_populates="detalles")
+
+class Gasto(db.Model):
+    __tablename__ = "gastos"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    descripcion = db.Column(db.Text, nullable=False)
+    monto = db.Column(db.Float, nullable=False)
+    categoria = db.Column(db.String(50), nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow)   

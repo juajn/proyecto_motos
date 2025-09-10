@@ -17,6 +17,7 @@ def create_app():
     bcrypt.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
+    
 
     # Registrar Blueprints
     from controladores import auth_bp, admin_bp, mecanico_bp, usuario_bp

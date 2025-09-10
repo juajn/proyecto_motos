@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from extensions import db, bcrypt, login_manager
-from models import DetalleVenta, Usuario, Producto, Trabajo, Venta ,db
+from models import DetalleVenta, Gasto, Usuario, Producto, Trabajo, Venta ,db
 from datetime import datetime, timedelta
 from sqlalchemy.sql.expression import func
 import os
@@ -705,54 +705,6 @@ def comprar_carrito():
     flash("¡Compra realizada con éxito!", "success")
     return redirect(url_for('usuario.dashboard'))
 
-#@usuario_bp.route('/pagar', methods=['POST'])
-#@login_required
-#def pagar():
-    #carrito = session.get('carrito', [])
-    #if not carrito:
-        #flash("El carrito está vacío", "warning")
-        #return redirect(url_for('usuario.ver_carrito'))
-
-    #sdk = mercadopago.SDK(current_app.config['MERCADOPAGO_ACCESS_TOKEN'])
-
-    #items = []
-    #for item in carrito:
-        #cantidad = item.get('cantidad', 1)
-        #items.append({
-            #"title": item['nombre'],
-            #"quantity": cantidad,
-            #"unit_price": float(item['precio']),
-            #"currency_id": "COP"
-        #})
-
-    #preference_data = {
-        #"items": items,
-        #"back_urls": {
-            #"success": url_for('usuario.compra_exitosa', _external=True),
-            #"failure": url_for('usuario.ver_carrito', _external=True),
-            #"pending": url_for('usuario.ver_carrito', _external=True)
-        #},
-        #"auto_return": "approved"
-    #}
-
-    #preference_response = sdk.preference().create(preference_data)
-    #print("Respuesta MercadoPago:", preference_response)
-
-    #preference = preference_response.get("response", {})
-
-    #if 'init_point' not in preference:
-        #flash("Error al generar la pasarela de pago", "danger")
-        #return redirect(url_for('usuario.ver_carrito'))
-
-    #return redirect(preference["init_point"])
-
-
-#@usuario_bp.route('/compra_exitosa')
-#@login_required
-#def compra_exitosa():
-    #session.pop('carrito', None)
-    #flash("¡Compra realizada con éxito!", "success")
-    #return redirect(url_for('usuario.dashboard'))
 
 @usuario_bp.route('/ver_trabajos')
 @login_required
@@ -915,7 +867,7 @@ def ventas():
     if fecha_fin:
         try:
             fin = datetime.strptime(fecha_fin, "%Y-%m-%d")
-            fin = fin + timedelta(days=1) - timedelta(seconds=1)  # incluir todo el día
+            fin = fin + timedelta(days=1) - timedelta(seconds=1)  
             query = query.filter(Venta.fecha <= fin)
         except ValueError:
             pass
@@ -925,7 +877,10 @@ def ventas():
     clientes = Usuario.query.filter_by(rol="usuario").all()
     vendedores = Usuario.query.filter_by(rol="admin").all()
     productos = Producto.query.all()
-    total = sum(venta.total for venta in ventas)
+    total_ventas = sum(venta.total for venta in ventas)
+
+    gastos = Gasto.query.order_by(Gasto.fecha.desc()).all()
+    total_gastos = sum(gasto.monto for gasto in gastos)
 
     return render_template(
         "admin/ventas/ingresos.html",
@@ -933,7 +888,9 @@ def ventas():
         clientes=clientes,
         vendedores=vendedores,
         productos=productos,
-        total=total
+        total_ventas=total_ventas,
+        gastos=gastos,
+        total_gastos=total_gastos
     )
 
 
@@ -1032,4 +989,68 @@ def eliminar_venta(venta_id):
     db.session.delete(venta)
     db.session.commit()
     flash("Venta eliminada correctamente 🗑️", "success")
+    return redirect(url_for("admin.ventas"))
+
+# ============================
+# Agregar gasto
+# ============================
+@admin_bp.route("/nuevo_gasto", methods=["POST"])
+def nuevo_gasto():
+    try:
+        descripcion = request.form["descripcion"]
+        monto = float(request.form["monto"])
+        categoria = request.form["categoria"]
+        fecha = datetime.strptime(request.form["fecha"], "%Y-%m-%d").date()
+
+        nuevo = Gasto(
+            descripcion=descripcion,
+            monto=monto,
+            categoria=categoria,
+            fecha=fecha
+        )
+        db.session.add(nuevo)
+        db.session.commit()
+
+        flash("✅ Gasto registrado exitosamente.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ Error al registrar gasto: {str(e)}", "danger")
+
+    return redirect(url_for("admin.ventas")) 
+# ============================
+# Editar gasto
+# ============================
+@admin_bp.route('/gastos/<int:gasto_id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_gasto(gasto_id):
+    if current_user.rol != "admin":
+        abort(403)
+
+    gasto = Gasto.query.get_or_404(gasto_id)
+
+    if request.method == 'POST':
+        gasto.descripcion = request.form.get("descripcion")
+        gasto.monto = float(request.form.get("monto"))
+        gasto.categoria = request.form.get("categoria")
+        gasto.fecha = datetime.strptime(request.form.get("fecha"), "%Y-%m-%d").date()
+        
+        db.session.commit()
+        flash("Gasto actualizado correctamente ✅", "success")
+        return redirect(url_for("admin.ventas"))
+
+    return render_template("admin/ventas/editar_gasto.html", gasto=gasto)
+
+# ============================
+# Eliminar gasto
+# ============================
+@admin_bp.route('/gastos/<int:gasto_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_gasto(gasto_id):
+    if current_user.rol != "admin":
+        abort(403)
+
+    gasto = Gasto.query.get_or_404(gasto_id)
+    db.session.delete(gasto)
+    db.session.commit()
+    flash("Gasto eliminado correctamente 🗑️", "success")
     return redirect(url_for("admin.ventas"))
