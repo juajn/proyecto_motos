@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración de Perfil{% endblock %}
+
+{% block content %}
+<div class="container py-5 bg-white">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+
+            <!-- Card -->
+            <div class="card shadow-sm border rounded-3">
+                
+                <!-- Header -->
+                <div class="card-header text-center bg-white border-bottom py-4">
+                    
+                    <h3 class="fw-bold mb-1">Configuración de Perfil</h3>
+                    <p class="text-muted">Actualiza tu información personal</p>
+                </div>
+
+                <!-- Formulario -->
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        
+                        <!-- Nombre -->
+                        <div class="mb-4">
+                            <label for="nombre" class="form-label fw-semibold text-muted">
+                                Nombre completo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="nombre" id="nombre"
+                                   value="{{ current_user.nombre }}"
+                                   class="form-control form-control-lg shadow-sm rounded-0"
+                                   placeholder="Ingrese su nombre completo" required>
+                            <div class="invalid-feedback">Por favor ingresa un nombre válido.</div>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="mb-4">
+                            <label for="contraseña" class="form-label fw-semibold text-muted">
+                                Nueva contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" name="contraseña" id="contraseña"
+                                       class="form-control form-control-lg shadow-sm rounded-0"
+                                       placeholder="Dejar en blanco para mantener la actual">
+                                <button class="btn btn-outline-secondary rounded-0" type="button" id="togglePassword">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+  <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z"/>
+  <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829"/>
+  <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z"/>
+</svg>
+                                </button>
+                            </div>
+                            <small class="text-muted">Mínimo 8 caracteres. Incluye letras, números y símbolos.</small>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="mb-4">
+                            <label for="imagen" class="form-label fw-semibold text-muted">
+                                Foto de perfil
+                            </label>
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                {% if current_user.imagen %}
+                                    <img src="{{ url_for('static', filename='uploads/' + current_user.imagen) }}"
+                                         class="border shadow-sm"
+                                         style="width:90px; height:90px; object-fit:cover; border-radius:12px;" 
+                                         alt="Foto actual">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center bg-light border"
+                                         style="width:90px; height:90px; border-radius:12px;">
+                                        <i class="fas fa-user text-muted fs-3"></i>
+                                    </div>
+                                {% endif %}
+                                <input type="file" name="imagen" id="imagen"
+                                       class="form-control shadow-sm rounded-0" accept="image/*">
+                            </div>
+                            <small class="text-muted">Formatos: JPG, PNG, GIF. Máx: 2MB.</small>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                            <a href="{{ url_for('usuario.dashboard') }}"
+                               class="btn btn-outline-secondary rounded-0 px-4 py-2 fw-semibold shadow-sm">
+                                <i class="fas fa-arrow-left me-2"></i> Volver
+                            </a>
+                            <button type="submit"
+                                    class="btn btn-primary rounded-0 px-4 py-2 fw-semibold shadow-sm">
+                                <i class="fas fa-save me-2"></i> Guardar cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Estilos -->
+<style>
+    body {
+        background-color: #ffffff;
+    }
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+    }
+    #togglePassword {
+        transition: all 0.3s ease;
+    }
+    #togglePassword:hover {
+        background-color: #f1f5f9;
+    }
+</style>
+
+<!-- Script -->
+<script>
+    // Toggle password
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordInput = document.getElementById('contraseña');
+        const icon = this.querySelector('i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    });
+
+    // Validación Bootstrap
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}

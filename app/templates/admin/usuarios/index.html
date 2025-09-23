@@ -170,13 +170,13 @@
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
                                     {% if usuario.imagen %}
-                                    <img src="{{ url_for('static', filename='uploads/' + usuario.imagen) }}" 
-                                         width="40" height="40" class="rounded-circle me-3 border shadow-sm" alt="Foto de perfil">
-                                    {% else %}
-                                    <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                        <i class="fas fa-user text-muted"></i>
-                                    </div>
-                                    {% endif %}
+    <img src="{{ url_for('static', filename='uploads/' + usuario.imagen) }}" 
+         width="40" height="40" class="rounded-circle me-3 border shadow-sm" alt="Foto de perfil">
+{% else %}
+    <img src="{{ url_for('static', filename='uploads/default.png') }}" 
+         width="40" height="40" class="rounded-circle me-3 border shadow-sm" alt="Usuario predeterminado">
+{% endif %}
+
                                     <div>
                                         <div class="fw-semibold">{{ usuario.nombre }}</div>
                                         <small class="text-muted">ID: {{ usuario.id }}</small>

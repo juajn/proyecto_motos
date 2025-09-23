@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash
 from extensions import db, bcrypt, login_manager
 from models import DetalleVenta, Gasto, Usuario, Producto, Trabajo, Venta ,db
 from datetime import datetime, timedelta
@@ -837,13 +838,28 @@ def nueva_venta():
 # ============================
 # Listar y filtrar ventas
 # ============================
+from datetime import datetime, date, timedelta
+
 @admin_bp.route('/ventas')
 @login_required
 def ventas():
     if current_user.rol != 'admin':
         abort(403)
 
-    query = Venta.query.join(Usuario, Venta.cliente)
+    # ==================== FILTRO BASE: SOLO HOY ====================
+    hoy = date.today()
+    inicio_hoy = datetime.combine(hoy, datetime.min.time())
+    fin_hoy = datetime.combine(hoy, datetime.max.time())
+
+    query = Venta.query.join(Usuario, Venta.cliente).filter(
+        Venta.fecha >= inicio_hoy,
+        Venta.fecha <= fin_hoy
+    )
+
+    gasto_query = Gasto.query.filter(
+        Gasto.fecha >= inicio_hoy,
+        Gasto.fecha <= fin_hoy
+    )
 
     # ====== FILTRO POR USUARIO ======
     usuario = request.args.get("usuario", "").strip()
@@ -861,6 +877,7 @@ def ventas():
         try:
             inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d")
             query = query.filter(Venta.fecha >= inicio)
+            gasto_query = gasto_query.filter(Gasto.fecha >= inicio)
         except ValueError:
             pass
 
@@ -869,18 +886,20 @@ def ventas():
             fin = datetime.strptime(fecha_fin, "%Y-%m-%d")
             fin = fin + timedelta(days=1) - timedelta(seconds=1)  
             query = query.filter(Venta.fecha <= fin)
+            gasto_query = gasto_query.filter(Gasto.fecha <= fin)
         except ValueError:
             pass
 
-    # Ejecutar consulta
+    # ==================== EJECUTAR CONSULTAS ====================
     ventas = query.order_by(Venta.fecha.desc()).all()
+    gastos = gasto_query.order_by(Gasto.fecha.desc()).all()
+
+    total_ventas = sum(venta.total for venta in ventas)
+    total_gastos = sum(gasto.monto for gasto in gastos)
+
     clientes = Usuario.query.filter_by(rol="usuario").all()
     vendedores = Usuario.query.filter_by(rol="admin").all()
     productos = Producto.query.all()
-    total_ventas = sum(venta.total for venta in ventas)
-
-    gastos = Gasto.query.order_by(Gasto.fecha.desc()).all()
-    total_gastos = sum(gasto.monto for gasto in gastos)
 
     return render_template(
         "admin/ventas/ingresos.html",
@@ -1054,3 +1073,99 @@ def eliminar_gasto(gasto_id):
     db.session.commit()
     flash("Gasto eliminado correctamente 🗑️", "success")
     return redirect(url_for("admin.ventas"))
+
+# ============================
+# configuración usuario
+# ============================
+@usuario_bp.route('/configuracion', methods=['GET', 'POST'])
+@login_required
+def configuracion():
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        contraseña = request.form.get('contraseña')
+        imagen = request.files.get('imagen')
+
+        # Actualizar nombre
+        if nombre and nombre.strip():
+            current_user.nombre = nombre.strip()
+
+        # Actualizar contraseña (si el usuario ingresó una nueva)
+        if contraseña and len(contraseña) >= 8:
+            current_user.contraseña = bcrypt.generate_password_hash(contraseña)
+
+        # Subir imagen de perfil
+        if imagen and imagen.filename != "":
+            filename = secure_filename(imagen.filename)
+            upload_path = os.path.join(current_app.root_path, 'static/uploads', filename)
+            imagen.save(upload_path)
+            current_user.imagen = filename
+
+        db.session.commit()
+        flash("Tu información ha sido actualizada correctamente ✅", "success")
+        return redirect(url_for('usuario.configuracion'))
+
+    return render_template('usuario/usuario.html')
+
+@admin_bp.route('/configuracion', methods=['GET', 'POST'])
+@login_required
+def configuracion():
+    if current_user.rol != 'admin':
+        abort(403)
+
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        contraseña = request.form.get('contraseña')
+        imagen = request.files.get('imagen')
+
+        # Actualizar nombre
+        if nombre and nombre.strip():
+            current_user.nombre = nombre.strip()
+
+        # Actualizar contraseña (si el usuario ingresó una nueva)
+        if contraseña and len(contraseña) >= 8:
+            current_user.contraseña = bcrypt.generate_password_hash(contraseña)
+
+        # Subir imagen de perfil
+        if imagen and imagen.filename != "":
+            filename = secure_filename(imagen.filename)
+            upload_path = os.path.join(current_app.root_path, 'static/uploads', filename)
+            imagen.save(upload_path)
+            current_user.imagen = filename
+
+        db.session.commit()
+        flash("Tu información ha sido actualizada correctamente ✅", "success")
+        return redirect(url_for('admin.configuracion'))
+
+    return render_template('admin/configuracion.html', usuario=current_user)
+
+@mecanico_bp.route('/configuracion', methods=['GET', 'POST'])
+@login_required
+def configuracion():
+    if current_user.rol != 'mecanico':
+        abort(403)
+
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        contraseña = request.form.get('contraseña')
+        imagen = request.files.get('imagen')
+
+        # Actualizar nombre
+        if nombre and nombre.strip():
+            current_user.nombre = nombre.strip()
+
+        # Actualizar contraseña (si el usuario ingresó una nueva)
+        if contraseña and len(contraseña) >= 8:
+            current_user.contraseña = bcrypt.generate_password_hash(contraseña)
+
+        # Subir imagen de perfil
+        if imagen and imagen.filename != "":
+            filename = secure_filename(imagen.filename)
+            upload_path = os.path.join(current_app.root_path, 'static/uploads', filename)
+            imagen.save(upload_path)
+            current_user.imagen = filename
+
+        db.session.commit()
+        flash("Tu información ha sido actualizada correctamente ✅", "success")
+        return redirect(url_for('mecanico.configuracion'))
+
+    return render_template('mecanico/configuracion.html', usuario=current_user)

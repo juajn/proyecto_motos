@@ -438,6 +438,13 @@
                                 <a class="dropdown-item logout" href="{{ url_for('auth.logout') }}">
                                     <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                                 </a>
+                                <a class="dropdown-item "href="
+                                    {% if current_user.rol == 'admin' %}{{ url_for('admin.configuracion') }}
+                                    {% elif current_user.rol == 'mecanico' %}{{ url_for('mecanico.configuracion') }}
+                                    {% elif current_user.rol == 'usuario' %}{{ url_for('usuario.configuracion') }}
+                                    {% endif %}">
+                                    <i class="bi bi-gear"></i> Configuración
+                                </a>
                             </li>
                         </ul>
                     </li>
