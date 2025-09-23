@@ -1,10 +1,10 @@
 # Entorno virtual
 venv/
-env/
+
 .venv/
 
 # Archivos de entorno y configuraciones secretas
-.env
+
 
 # Archivos de caché de Python
 __pycache__/
