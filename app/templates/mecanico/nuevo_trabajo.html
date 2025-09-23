@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Trabajo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            
+            <!-- Encabezado con navegación -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h4 fw-bold text-gray-800">
+                        <i class="fas fa-plus-circle me-2 text-primary"></i> Crear Nuevo Trabajo
+                    </h2>
+                    <p class="text-muted mb-0">Complete los detalles del nuevo trabajo de reparación</p>
+                </div>
+            </div>
+
+            <!-- Tarjeta principal -->
+            <div class="card shadow border-0 rounded-lg overflow-hidden">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #2c3e50, #4a6580);">
+                    <h5 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-clipboard-list me-2"></i> Información del Trabajo
+                    </h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div class="row">
+                            <!-- Columna izquierda -->
+                            <div class="col-md-6">
+                                <!-- Cliente -->
+                                <div class="mb-4">
+                                    <label for="cliente_id" class="form-label fw-semibold text-dark">
+                                        <i class="fas fa-user me-2 text-primary"></i> Cliente
+                                    </label>
+                                    <select name="cliente_id" class="form-select form-select-lg" id="cliente_id" required>
+                                        <option value="" selected disabled>Seleccione un cliente</option>
+                                        {% for cliente in clientes %}
+                                            <option value="{{ cliente.id }}">{{ cliente.nombre }} - {{ cliente.telefono or 'Sin teléfono' }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Seleccione el cliente asociado a este trabajo</div>
+                                </div>
+                                
+                                <!-- Costo -->
+                                <div class="mb-4">
+                                    <label for="costo" class="form-label fw-semibold text-dark">
+                                        <i class="fas fa-dollar-sign me-2 text-primary"></i> Precio estimado
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">$</span>
+                                        <input type="number" name="costo" class="form-control form-control-lg" 
+                                               id="costo" step="0.01" min="0" placeholder="0.00" required>
+                                    </div>
+                                    <div class="form-text">Ingrese el precio estimado del trabajo</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Columna derecha -->
+                            <div class="col-md-6">
+                                <!-- Foto -->
+                                <div class="mb-4">
+                                    <label for="foto" class="form-label fw-semibold text-dark">
+                                        <i class="fas fa-camera me-2 text-primary"></i> Imagen del trabajo (opcional)
+                                    </label>
+                                    <div class="file-upload-wrapper">
+                                        <input type="file" name="foto" class="form-control form-control-lg" id="foto" 
+                                               accept="image/*" onchange="previewImage(event)">
+                                        <div class="form-text">Formatos: JPG, PNG, GIF. Máx: 5MB</div>
+                                    </div>
+                                    
+                                    <!-- Vista previa de imagen -->
+                                    <div class="mt-3 text-center" id="imagePreview" style="display: none;">
+                                        <p class="small text-muted">Vista previa:</p>
+                                        <img id="preview" class="img-thumbnail" style="max-height: 150px;">
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImage()">
+                                            <i class="fas fa-times me-1"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Descripción (ancho completo) -->
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label fw-semibold text-dark">
+                                <i class="fas fa-align-left me-2 text-primary"></i> Descripción del trabajo
+                            </label>
+                            <textarea name="descripcion" class="form-control form-control-lg" 
+                                      id="descripcion" rows="4" 
+                                      placeholder="Describa en detalle el trabajo a realizar..." required></textarea>
+                            <div class="form-text">Sea lo más específico posible con los detalles del trabajo</div>
+                        </div>
+                        
+                       
+                        <!-- Botones de acción -->
+                            <div>
+                                <button type="reset" class="btn btn-lg btn-outline-secondary me-2">
+                                    <i class="fas fa-eraser me-1"></i> Limpiar
+                                </button>
+                                <button type="submit" class="btn btn-lg btn-primary px-4">
+                                    <i class="fas fa-save me-1"></i> Guardar Trabajo
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Información adicional -->
+            <div class="mt-4 p-3 bg-light rounded">
+                <h6 class="text-dark mb-2">
+                    <i class="fas fa-lightbulb me-2 text-warning"></i> Recomendaciones
+                </h6>
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li><i class="fas fa-check-circle me-2 text-success"></i> Incluya fotografías para mejor referencia del trabajo</li>
+                    <li><i class="fas fa-check-circle me-2 text-success"></i> Describa con detalle los problemas a resolver</li>
+                    <li><i class="fas fa-check-circle me-2 text-success"></i> Estime realisticamente el costo del trabajo</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos personalizados -->
+<style>
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .form-control, .form-select {
+        border-radius: 0.35rem;
+        transition: all 0.15s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        border-color: #4e73df;
+    }
+    
+    .form-control-lg, .form-select-lg {
+        padding: 0.75rem 1rem;
+    }
+    
+    .file-upload-wrapper {
+        position: relative;
+    }
+    
+    .btn {
+        border-radius: 0.35rem;
+        font-weight: 500;
+        transition: all 0.15s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #4e73df, #2a4bc9);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2a4bc9, #1e3cad);
+        transform: translateY(-1px);
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+    }
+</style>
+
+<!-- Scripts para funcionalidad adicional -->
+<script>
+    // Vista previa de imagen
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const output = document.getElementById('preview');
+            output.src = reader.result;
+            document.getElementById('imagePreview').style.display = 'block';
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+    
+    // Eliminar imagen seleccionada
+    function removeImage() {
+        document.getElementById('foto').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+    }
+    
+    // Validación de formulario
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms)
+            .forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+    })();
+    
+    // Formatear input de precio
+    document.getElementById('costo').addEventListener('blur', function() {
+        if (this.value) {
+            this.value = parseFloat(this.value).toFixed(2);
+        }
+    });
+</script>
+{% endblock %}

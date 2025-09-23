@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Panel Mecánico{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+    <!-- Encabezado mejorado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 fw-bold text-gray-800">🔧 Panel del Mecánico</h2>
+            <p class="text-gray-600 mb-0">Gestiona tus trabajos asignados y estado de reparaciones</p>
+        </div>
+        <a href="{{ url_for('mecanico.nuevo_trabajo') }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus-circle me-2"></i> Nuevo trabajo
+        </a>
+    </div>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Trabajos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ trabajos|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pendientes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ trabajos|selectattr('estado', 'equalto', 'pendiente')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">En Proceso</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ trabajos|selectattr('estado', 'equalto', 'en proceso')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tools fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completados</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ trabajos|selectattr('estado', 'equalto', 'completado')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel principal de trabajos -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-clipboard-list me-2"></i> Trabajos asignados
+            </h6>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-filter me-1"></i> Filtrar
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                    <li><a class="dropdown-item" href="?estado=todos">Todos</a></li>
+                    <li><a class="dropdown-item" href="?estado=pendiente">Pendientes</a></li>
+                    <li><a class="dropdown-item" href="?estado=en proceso">En proceso</a></li>
+                    <li><a class="dropdown-item" href="?estado=completado">Completados</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if trabajos %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Foto</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Cliente</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trabajo in trabajos %}
+                        <tr class="align-middle">
+                            <td class="text-center fw-bold">{{ loop.index }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="ms-3">
+                                        <p class="fw-bold mb-0 text-gray-800">{{ trabajo.descripcion|truncate(50) }}</p>
+                                        {% if trabajo.detalles %}
+                                        <p class="text-muted mb-0 small">{{ trabajo.detalles|truncate(30) }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if trabajo.costo %}
+                                    <span class="fw-semibold text-success">
+                                        ${{ '%.2f'|format(trabajo.costo) }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">Por asignar</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if trabajo.foto %}
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ trabajo.id }}">
+                                    <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
+                                         alt="Foto trabajo" 
+                                         class="img-thumbnail"
+                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                </a>
+                                <!-- Modal para visualizar imagen -->
+                                <div class="modal fade" id="imageModal{{ trabajo.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Foto del trabajo</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
+                                                     class="img-fluid rounded" 
+                                                     alt="Foto trabajo completo">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                    <span class="text-muted small">Sin imagen</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ trabajo.fecha_creacion.strftime('%d/%m/%Y') }}<br>
+                                    <span class="text-gray-600">{{ trabajo.fecha_creacion.strftime('%H:%M') }}</span>
+                                </small>
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('mecanico.cambiar_estado', id=trabajo.id) }}">
+                                    <select name="estado" class="form-select form-select-sm status-select" onchange="this.form.submit()" style="min-width: 120px;">
+                                        <option value="pendiente" {% if trabajo.estado == 'pendiente' %}selected{% endif %}>
+                                            Pendiente
+                                        </option>
+                                        <option value="en proceso" {% if trabajo.estado == 'en proceso' %}selected{% endif %}>
+                                            En proceso
+                                        </option>
+                                        <option value="completado" {% if trabajo.estado == 'completado' %}selected{% endif %}>
+                                            Completado
+                                        </option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="ms-3">
+                                        <p class="fw-bold mb-0">{{ trabajo.cliente.nombre }}</p>
+                                        
+                                    </div>
+                                </div>
+                            </td>
+                           
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-clipboard-list fa-4x text-gray-300 mb-3"></i>
+                <h5 class="text-gray-400">No hay trabajos asignados</h5>
+                <p class="text-gray-500">Cuando te asignen trabajos, aparecerán listados aquí.</p>
+                <a href="{{ url_for('mecanico.nuevo_trabajo') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus-circle me-2"></i> Crear primer trabajo
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Estilos y scripts adicionales -->
+<style>
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    .table thead th {
+        border-bottom: 1px solid #e3e6f0;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        color: #4e73df;
+    }
+    
+    .status-select {
+        border-radius: 0.35rem;
+        transition: all 0.15s ease;
+    }
+    
+    .status-select:focus {
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        border-color: #4e73df;
+    }
+    
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+    
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+    
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+    
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+    
+    .hover-row {
+        transition: all 0.2s ease;
+    }
+    
+    .hover-row:hover {
+        background-color: #f8f9fc;
+        transform: translateY(-1px);
+    }
+    
+    .img-thumbnail {
+        transition: all 0.2s ease;
+    }
+    
+    .img-thumbnail:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0.15rem 0.5rem rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+<script>
+    // Inicializar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Cambiar estilo de los selects según estado
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.classList.add('border-0');
+            
+            if (select.value === 'pendiente') {
+                select.classList.add('bg-warning', 'text-dark');
+            } else if (select.value === 'en proceso') {
+                select.classList.add('bg-info', 'text-white');
+            } else if (select.value === 'completado') {
+                select.classList.add('bg-success', 'text-white');
+            }
+            
+            select.addEventListener('change', function() {
+                this.classList.remove('bg-warning', 'bg-info', 'bg-success', 'text-dark', 'text-white');
+                
+                if (this.value === 'pendiente') {
+                    this.classList.add('bg-warning', 'text-dark');
+                } else if (this.value === 'en proceso') {
+                    this.classList.add('bg-info', 'text-white');
+                } else if (this.value === 'completado') {
+                    this.classList.add('bg-success', 'text-white');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

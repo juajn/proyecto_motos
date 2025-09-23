@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Trabajo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header con navegación -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+            </nav>
+            <h1 class="h3 mb-0">Editar Trabajo</h1>
+        </div>
+        
+    </div>
+
+    <div class="card shadow-sm border-0 overflow-hidden">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="card-title mb-0"><i class="fas fa-edit me-2"></i> Información del Trabajo</h5>
+        </div>
+        
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <div class="row">
+                    <!-- Columna izquierda -->
+                    <div class="col-lg-6">
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label fw-semibold">Descripción del Trabajo <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg" name="descripcion" 
+                                   value="{{ trabajo.descripcion }}" required placeholder="Ingrese la descripción del trabajo">
+                            <div class="invalid-feedback">
+                                Por favor ingrese una descripción para el trabajo.
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="costo" class="form-label fw-semibold">Precio ($)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" min="0" class="form-control" 
+                                               name="costo" value="{{ trabajo.costo or '' }}" placeholder="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="estado" class="form-label fw-semibold">Estado <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="estado" required>
+                                        <option value="pendiente" {% if trabajo.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                        <option value="en proceso" {% if trabajo.estado == 'en proceso' %}selected{% endif %}>En proceso</option>
+                                        <option value="completado" {% if trabajo.estado == 'completado' %}selected{% endif %}>Completado</option>
+                                        <option value="pagado" {% if trabajo.estado == 'pagado' %}selected{% endif %}>Pagado</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Por favor seleccione un estado.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="mecanico_id" class="form-label fw-semibold">Mecánico <span class="text-danger">*</span></label>
+                            <select class="form-select" name="mecanico_id" required>
+                                {% for m in mecanicos %}
+                                    <option value="{{ m.id }}" {% if trabajo.mecanico_id == m.id %}selected{% endif %}>{{ m.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione un mecánico.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="cliente_id" class="form-label fw-semibold">Cliente <span class="text-danger">*</span></label>
+                            <select class="form-select" name="cliente_id" required>
+                                {% for c in clientes %}
+                                    <option value="{{ c.id }}" {% if trabajo.cliente_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione un cliente.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna derecha -->
+                    <div class="col-lg-6">
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3 fw-semibold">Información de Fechas</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted small mb-1">Fecha de creación</label>
+                                            <p class="mb-0 fw-medium">{{ trabajo.fecha_creacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_creacion else 'Sin fecha' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted small mb-1">Fecha de pago</label>
+                                            <p class="mb-0 fw-medium">{{ trabajo.fecha_cancelacion.strftime('%d/%m/%Y %H:%M') if trabajo.fecha_cancelacion else 'Sin fecha' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Foto actual</label>
+                            <div class="border rounded p-3 text-center">
+                                {% if trabajo.foto %}
+                                    <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
+                                         class="img-fluid rounded" style="max-height: 200px;">
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
+                                           target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i> Ver imagen completa
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="py-4 text-muted">
+                                        <i class="fas fa-image fa-2x mb-2"></i>
+                                        <p class="mb-0">No hay imagen disponible</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="foto" class="form-label fw-semibold">Reemplazar con nueva imagen (opcional)</label>
+                            <input type="file" class="form-control" name="foto" accept="image/*">
+                            <div class="form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('admin.listar_trabajos') }}" class="btn btn-lg btn-outline-secondary rounded-pill px-4">
+                        <i class="fas fa-times me-2"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-lg btn-primary rounded-pill px-4">
+                        <i class="fas fa-save me-2"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Validación de formularios -->
+<script>
+// Validación de formularios con Bootstrap
+(function () {
+  'use strict'
+  var forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+</script>
+
+<style>
+.card {
+    border-radius: 12px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.input-group-text {
+    border-radius: 8px 0 0 8px;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.btn {
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.breadcrumb-item a {
+    color: #6c757d;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: #0d6efd;
+}
+</style>
+{% endblock %}

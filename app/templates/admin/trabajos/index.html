@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Trabajos{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">
+                <i class="fas fa-tools me-2 text-primary"></i> Gestión de Trabajos
+            </h2>
+        </div>
+        <button class="btn btn-primary rounded-2 px-4 py-2 shadow-sm" data-bs-toggle="collapse" data-bs-target="#formNuevoTrabajo">
+            <i class="fas fa-plus-circle me-2"></i> Nuevo Trabajo
+        </button>
+    </div>
+
+    <!-- Formulario nuevo trabajo -->
+    <div id="formNuevoTrabajo" class="collapse mb-5">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 text-dark"><i class="fas fa-plus-circle me-2 text-primary"></i> Agregar Nuevo Trabajo</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin.crear_trabajo') }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-medium text-dark">Descripción del Trabajo <span class="text-danger">*</span></label>
+                            <input type="text" name="descripcion" class="form-control rounded-2 border" placeholder="Describa el trabajo a realizar..." required>
+                            <div class="invalid-feedback">
+                                Por favor ingrese una descripción para el trabajo.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium text-dark">Estado <span class="text-danger">*</span></label>
+                            <select name="estado" class="form-select rounded-2 border" required>
+                                <option value="" selected disabled>Seleccione un estado</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Completado">Completado</option>
+                                <option value="Pagado">Pagado</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione un estado.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium text-dark">Precio ($) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">$</span>
+                                <input type="number" name="costo" step="0.01" min="0" class="form-control rounded-2 border-start-0" placeholder="0.00" required>
+                            </div>
+                            <div class="invalid-feedback">
+                                Por favor ingrese un precio válido.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium text-dark">Mecánico <span class="text-danger">*</span></label>
+                            <select name="mecanico_id" class="form-select rounded-2 border" required>
+                                <option value="" selected disabled>Seleccione un mecánico</option>
+                                {% for m in mecanicos %}
+                                    <option value="{{ m.id }}">{{ m.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione un mecánico.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium text-dark">Cliente <span class="text-danger">*</span></label>
+                            <select name="cliente_id" class="form-select rounded-2 border" required>
+                                <option value="" selected disabled>Seleccione un cliente</option>
+                                {% for c in clientes %}
+                                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione un cliente.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-medium text-dark">Foto del Trabajo</label>
+                            <input type="file" name="foto" class="form-control rounded-2 border" accept="image/*">
+                            <div class="form-text">
+                                Formatos: JPG, PNG, WEBP. Tamaño máximo: 5MB.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary rounded-2 px-4 py-2">
+                            <i class="fas fa-save me-2"></i> Guardar Trabajo
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary rounded-2 px-4 py-2" data-bs-toggle="collapse" data-bs-target="#formNuevoTrabajo">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Panel de estadísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="text-muted fw-semibold mb-0">Total Trabajos</p>
+                            <h4 class="mb-0">{{ total_trabajos }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-tools text-primary fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="text-muted fw-semibold mb-0">Pagados</p>
+                            <h4 class="mb-0">{{ trabajos_pagados }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-success fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="text-muted fw-semibold mb-0">Pendientes</p>
+                            <h4 class="mb-0">{{ trabajos_pendientes }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clock text-warning fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="text-muted fw-semibold mb-0">En Proceso</p>
+                            <h4 class="mb-0">{{ trabajos_en_proceso }}</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-cogs text-info fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de estado MEJORADO -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body py-3">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <span class="me-2 fw-medium text-dark">Filtrar por estado:</span>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('admin.listar_trabajos') }}" 
+                       class="btn {% if not request.args.get('estado') %}btn-secondary{% else %}btn-outline-secondary{% endif %} rounded-2 py-2">
+                        Todos ({{ total_trabajos }})
+                    </a>
+                    <a href="{{ url_for('admin.listar_trabajos', estado='Pendiente') }}" 
+                       class="btn {% if request.args.get('estado') == 'Pendiente' %}btn-warning{% else %}btn-outline-warning{% endif %} rounded-2 py-2">
+                        Pendientes ({{ trabajos_pendientes }})
+                    </a>
+                    <a href="{{ url_for('admin.listar_trabajos', estado='En proceso') }}" 
+                       class="btn {% if request.args.get('estado') == 'En proceso' %}btn-info{% else %}btn-outline-info{% endif %} rounded-2 py-2">
+                        En Proceso ({{ trabajos_en_proceso }})
+                    </a>
+                    <a href="{{ url_for('admin.listar_trabajos', estado='Completado') }}" 
+                       class="btn {% if request.args.get('estado') == 'Completado' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-2 py-2">
+                        Completados ({{ trabajos_completados }})
+                    </a>
+                    <a href="{{ url_for('admin.listar_trabajos', estado='Pagado') }}" 
+                       class="btn {% if request.args.get('estado') == 'Pagado' %}btn-success{% else %}btn-outline-success{% endif %} rounded-2 py-2">
+                        Pagados ({{ trabajos_pagados }})
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Mostrar filtro activo -->
+            {% if request.args.get('estado') %}
+            <div class="mt-3">
+                <span class="badge bg-light text-dark border">
+                    <i class="fas fa-filter me-1 text-primary"></i>
+                    Filtrado por: <strong class="text-capitalize">{{ request.args.get('estado') }}</strong>
+                    <a href="{{ url_for('admin.listar_trabajos') }}" class="ms-2 text-danger">
+                        <i class="fas fa-times"></i> Limpiar filtro
+                    </a>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tabla de trabajos MEJORADA -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-dark"><i class="fas fa-list me-2 text-primary"></i> Lista de Trabajos</h5>
+            <span class="badge bg-light text-dark border">
+                {{ trabajos|length }} trabajo(s) encontrado(s)
+            </span>
+        </div>
+        <div class="card-body p-0">
+            {% if trabajos %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Mecánico</th>
+                            <th>Cliente</th>
+                            <th>Precio</th>
+                            <th>Fecha Creación</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trabajo in trabajos %}
+                        <tr>
+                            <td class="ps-4 fw-semibold text-muted">#{{ trabajo.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if trabajo.foto %}
+                                    <div class="flex-shrink-0 me-3">
+                                        <img src="{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}" 
+                                             width="40" height="40" 
+                                             class="rounded-2 object-fit-cover border"
+                                             style="cursor: pointer;" 
+                                             onclick="mostrarImagen('{{ url_for('static', filename='uploads/' ~ trabajo.foto) }}')">
+                                    </div>
+                                    {% endif %}
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 text-dark">{{ trabajo.descripcion }}</h6>
+                                        {% if trabajo.foto %}
+                                        <small class="text-muted">Click en imagen para ampliar</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if trabajo.estado == 'Pagado' %}
+                                    <span class="badge bg-success">Pagado</span>
+                                {% elif trabajo.estado == 'Pendiente' %}
+                                    <span class="badge bg-warning">Pendiente</span>
+                                {% elif trabajo.estado == 'En proceso' %}
+                                    <span class="badge bg-info">En proceso</span>
+                                {% elif trabajo.estado == 'Completado' %}
+                                    <span class="badge bg-primary">Completado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ trabajo.estado }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-medium">{{ trabajo.mecanico.nombre if trabajo.mecanico else 'N/A' }}</td>
+                            <td class="fw-medium">{{ trabajo.cliente.nombre if trabajo.cliente else 'N/A' }}</td>
+                            <td class="fw-bold text-dark">${{ "%.2f"|format(trabajo.costo) }}</td>
+                            <td>
+                                <small class="text-muted">{{ trabajo.fecha_creacion.strftime('%d/%m/%Y') if trabajo.fecha_creacion else 'N/A' }}</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{{ url_for('admin.editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-light rounded-2 border" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
+                                        <i class="fas fa-edit text-primary">Editar</i>
+                                    </a>
+                                    
+                                    {% if trabajo.estado != 'Pagado' %}
+                                    <form action="{{ url_for('admin.marcar_pagado', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Marcar este trabajo como Pagado y registrarlo en ventas?');">
+                                        <button type="submit" class="btn btn-sm btn-light rounded-2 border" data-bs-toggle="tooltip" data-bs-placement="top" title="Marcar como Pagado">
+                                            <i class="fas fa-check-circle text-success">Pagado</i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    
+                                    <form action="{{ url_for('admin.eliminar_trabajo', id=trabajo.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de que desea eliminar este trabajo?');">
+                                        <button type="submit" class="btn btn-sm btn-light rounded-2 border" data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                            <i class="fas fa-trash-alt text-danger">Eliminar</i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-clipboard-list fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No se encontraron trabajos</h5>
+                <p class="text-muted">No hay trabajos {% if request.args.get('estado') %}con el estado "{{ request.args.get('estado') }}"{% endif %} registrados.</p>
+                <a href="{{ url_for('admin.listar_trabajos') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-eye me-2"></i> Ver todos los trabajos
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer bg-white py-3 border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted">
+                    Mostrando <span class="fw-semibold">{{ trabajos|length }}</span> trabajo(s)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mostrar imagen -->
+<div class="modal fade" id="imagenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Imagen del Trabajo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImagen" src="" class="img-fluid rounded-3" alt="Imagen del trabajo">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos adicionales MEJORADOS -->
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .card {
+        border: none;
+    }
+    .table th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: #6c757d;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .table td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .badge {
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    .btn-group .btn {
+        padding: 8px 16px;
+    }
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<!-- Scripts mejorados -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+        
+        // Validación de formulario
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })
+    
+    // Función para mostrar imagen en modal
+    function mostrarImagen(src) {
+        document.getElementById('modalImagen').src = src;
+        var myModal = new bootstrap.Modal(document.getElementById('imagenModal'));
+        myModal.show();
+    }
+</script>
+{% endblock %}

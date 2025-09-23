@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Usuario · Sistema{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <!-- Tarjeta principal -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Encabezado con gradiente mejorado -->
+                <div class="card-header py-4 text-white" style="background: linear-gradient(135deg, #4e54c8, #8f94fb);">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-white bg-opacity-20 p-3 rounded-3">
+                                <i class="fas fa-user-edit fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4 class="mb-0 fw-bold">Editar Usuario</h4>
+                            <p class="mb-0 opacity-75">Actualice la información del usuario</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario -->
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('admin.editar_usuario', id=usuario.id) }}" class="needs-validation" novalidate>
+                        <!-- Información actual del usuario -->
+                        <div class="alert alert-info border-0 bg-light-info rounded-3 mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-info"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="alert-heading mb-1">Editando usuario: {{ usuario.nombre }}</h6>
+                                    <p class="mb-0 small">ID: {{ usuario.id }} · Registrado el: {{ usuario.fecha_registro.strftime('%d/%m/%Y') if usuario.fecha_registro else 'Fecha no disponible' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="mb-4">
+                            <label for="nombre" class="form-label fw-semibold">
+                                <i class="fas fa-user me-2 text-primary"></i> Nombre completo
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="nombre" id="nombre" 
+                                   value="{{ usuario.nombre }}" 
+                                   class="form-control form-control-lg rounded-3 shadow-sm" 
+                                   placeholder="Ingrese el nombre completo" required>
+                            <div class="invalid-feedback">
+                                Por favor ingrese un nombre válido
+                            </div>
+                        </div>
+
+                        <!-- Correo -->
+                        <div class="mb-4">
+                            <label for="correo" class="form-label fw-semibold">
+                                <i class="fas fa-envelope me-2 text-primary"></i> Correo electrónico
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" name="correo" id="correo" 
+                                   value="{{ usuario.correo }}" 
+                                   class="form-control form-control-lg rounded-3 shadow-sm" 
+                                   placeholder="usuario@ejemplo.com" required>
+                            <div class="invalid-feedback">
+                                Por favor ingrese un correo electrónico válido
+                            </div>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="mb-4">
+                            <label for="contraseña" class="form-label fw-semibold">
+                                <i class="fas fa-lock me-2 text-primary"></i> Nueva contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" name="contraseña" id="contraseña" 
+                                       class="form-control form-control-lg rounded-3 shadow-sm" 
+                                       placeholder="Dejar en blanco para mantener la actual">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Mínimo 8 caracteres. Incluya letras, números y símbolos para mayor seguridad.</div>
+                        </div>
+
+                        <!-- Rol -->
+                        <div class="mb-4">
+                            <label for="rol" class="form-label fw-semibold">
+                                <i class="fas fa-user-tag me-2 text-primary"></i> Rol de usuario
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="rol" id="rol" class="form-select form-select-lg rounded-3 shadow-sm" required>
+                                <option value="admin" {% if usuario.rol == 'admin' %}selected{% endif %}>Administrador</option>
+                                <option value="mecanico" {% if usuario.rol == 'mecanico' %}selected{% endif %}>Mecánico</option>
+                                <option value="usuario" {% if usuario.rol == 'usuario' %}selected{% endif %}>Usuario estándar</option>
+                            </select>
+                            <div class="form-text">
+                                <span class="d-block mt-1">
+                                    {% if usuario.rol == 'admin' %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">Acceso completo al sistema</span>
+                                    {% elif usuario.rol == 'mecanico' %}
+                                    <span class="badge bg-warning bg-opacity-10 text-dark">Acceso a módulos técnicos</span>
+                                    {% else %}
+                                    <span class="badge bg-success bg-opacity-10 text-success">Acceso limitado</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a href="{{ url_for('admin.listar_usuarios') }}" 
+                               class="btn btn-outline-secondary rounded-3 px-4 py-2 fw-semibold">
+                                <i class="fas fa-arrow-left me-2"></i> Volver
+                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('admin.listar_usuarios') }}" 
+                                   class="btn btn-outline-danger rounded-3 px-4 py-2 fw-semibold">
+                                    <i class="fas fa-times me-2"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary rounded-3 px-4 py-2 fw-semibold shadow-sm">
+                                    <i class="fas fa-save me-2"></i> Guardar cambios
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos adicionales -->
+<style>
+    .breadcrumb {
+        font-size: 0.9rem;
+    }
+    .card-header {
+        border-bottom: 0;
+    }
+    .form-control, .form-select {
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #4e54c8;
+        box-shadow: 0 0 0 0.25rem rgba(78, 84, 200, 0.15);
+    }
+    .btn {
+        transition: all 0.2s ease;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        border: none;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #4348b3, #7a80e6);
+        transform: translateY(-1px);
+    }
+    .form-check-input:checked {
+        background-color: #4e54c8;
+        border-color: #4e54c8;
+    }
+</style>
+
+<!-- Script para validación y funcionalidad -->
+<script>
+    // Funcionalidad para mostrar/ocultar contraseña
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('contraseña');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+
+    // Validación de formulario
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+{% endblock %}

@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario - Panel Administrativo{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class=" text-primary"></i>Gestión de Inventario
+            </h2>
+        </div>
+        
+    </div>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Total Productos</h6>
+                            <h3 class="fw-bold text-dark mb-0">{{ productos|length }}</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-3">
+                            <i class="bi bi-box text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Stock Bajo</h6>
+                            <h3 class="fw-bold text-danger mb-0">
+                                {{ productos|selectattr('stock', 'defined')|selectattr('stock', 'le', 2)|list|length }}
+                            </h3>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-3">
+                            <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Valor Total</h6>
+                            <h3 class="fw-bold text-success mb-0">
+                                ${{
+                                    productos|selectattr('precio', 'defined')|selectattr('stock', 'defined')|
+                                    sum(attribute='precio')|round(2)
+                                }}
+                            </h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-3">
+                            <i class="bi bi-currency-dollar text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title text-muted mb-1">Categorías</h6>
+                            <h3 class="fw-bold text-info mb-0">
+                                {{ productos|map(attribute='categoria')|unique|list|length }}
+                            </h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded-3">
+                            <i class="bi bi-tags text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de herramientas -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="busqueda" class="form-control border-start-0 shadow-none" 
+                               placeholder="Buscar producto por nombre, categoría o descripción...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                        <button id="btn-faltantes" class="btn btn-outline-danger rounded-pill">
+                            <i class="bi bi-exclamation-triangle me-1"></i> Faltantes
+                        </button>
+                        <button id="btn-todos" class="btn btn-outline-dark rounded-pill">
+                            <i class="bi bi-list-ul me-1"></i> Todos
+                        </button>
+                        <button id="btn-exportar-csv" class="btn btn-outline-success rounded-pill">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Excel
+                        </button>
+                        <button id="btn-exportar-pdf" class="btn btn-outline-primary rounded-pill">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de inventario -->
+    <div class="card border-0 shadow-lg rounded-4">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-table me-2"></i>Lista de Productos
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 500px;">
+                <table class="table table-hover align-middle mb-0" id="tabla-inventario-completa">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Categoría</th>
+                            <th class="text-center pe-4">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-inventario">
+                        {% for producto in productos %}
+                            <tr class="{% if producto.stock is not none and producto.stock <= 2 %}table-warning{% endif %}">
+                                <td class="ps-4 fw-semibold text-muted">#{{ producto.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-3 p-2 me-3">
+                                            <i class="bi bi-box text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">{{ producto.nombre }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ producto.descripcion[:50] }}{% if producto.descripcion|length > 50 %}...{% endif %}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">${{ "%.2f"|format(producto.precio) }}</span>
+                                </td>
+                                <td>
+                                    {% if producto.stock is not none %}
+                                        <span class="badge {% if producto.stock <= 2 %}bg-danger{% elif producto.stock <= 5 %}bg-warning{% else %}bg-success{% endif %} rounded-pill py-2 px-3">
+                                            {{ producto.stock }} unidades
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary rounded-pill py-2 px-3">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill">
+                                        {{ producto.categoria }}
+                                    </span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    {% if producto.stock is not none and producto.stock <= 2 %}
+                                        <i class="bi bi-exclamation-triangle-fill text-danger fs-5" data-bs-toggle="tooltip" title="Stock crítico"></i>
+                                    {% elif producto.stock is not none and producto.stock <= 5 %}
+                                        <i class="bi bi-info-circle-fill text-warning fs-5" data-bs-toggle="tooltip" title="Stock bajo"></i>
+                                    {% else %}
+                                        <i class="bi bi-check-circle-fill text-success fs-5" data-bs-toggle="tooltip" title="Stock normal"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                                        <h5>No hay productos en el inventario</h5>
+                                        <p class="mb-0">Comienza agregando nuevos productos al sistema</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Librerías necesarias -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Inicializar tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    const inputBusqueda = document.getElementById("busqueda");
+    const filas = document.querySelectorAll("#tabla-inventario tr");
+    const btnFaltantes = document.getElementById("btn-faltantes");
+    const btnTodos = document.getElementById("btn-todos");
+    const btnCSV = document.getElementById("btn-exportar-csv");
+    const btnPDF = document.getElementById("btn-exportar-pdf");
+
+    // Búsqueda en tiempo real
+    inputBusqueda.addEventListener("keyup", function () {
+        const texto = this.value.toLowerCase();
+        filas.forEach(fila => {
+            const contenido = fila.textContent.toLowerCase();
+            fila.style.display = contenido.includes(texto) ? "" : "none";
+        });
+    });
+
+    // Filtros
+    btnFaltantes.addEventListener("click", () => {
+        filas.forEach(fila => {
+            const badge = fila.querySelector(".badge");
+            fila.style.display = (badge && badge.classList.contains("bg-danger")) ? "" : "none";
+        });
+        inputBusqueda.value = "";
+    });
+
+    btnTodos.addEventListener("click", () => {
+        filas.forEach(fila => fila.style.display = "");
+        inputBusqueda.value = "";
+    });
+
+    // Exportar a Excel
+    btnCSV.addEventListener("click", () => {
+        const tabla = document.getElementById("tabla-inventario-completa");
+        const filasVisibles = tabla.querySelectorAll("tbody tr");
+
+        let data = [];
+        let headers = ["ID", "Nombre", "Descripción", "Precio", "Stock", "Categoría", "Estado"];
+        data.push(headers);
+
+        filasVisibles.forEach(fila => {
+            if (fila.style.display === "none") return;
+            const celdas = fila.querySelectorAll("td");
+            if (celdas.length === 0) return;
+
+            let row = [
+                celdas[0].innerText.trim().replace('#', ''),
+                celdas[1].querySelector('h6').innerText.trim(),
+                celdas[2].innerText.trim(),
+                celdas[3].innerText.trim().replace('$', ''),
+                celdas[4].innerText.trim().replace(' unidades', ''),
+                celdas[5].innerText.trim(),
+                celdas[6].querySelector('i')?.title || ''
+            ];
+            data.push(row);
+        });
+
+        // Crear hoja
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        // Estilo para encabezados
+        headers.forEach((_, i) => {
+            let cellRef = XLSX.utils.encode_cell({ r:0, c:i });
+            if (!ws[cellRef].s) ws[cellRef].s = {};
+            ws[cellRef].s = {
+                fill: { fgColor: { rgb: "2C3E50" } },
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                alignment: { horizontal: "center" }
+            };
+        });
+
+        // Ajustar anchos de columnas
+        const colWidths = [8, 25, 40, 12, 12, 15, 15];
+        ws['!cols'] = colWidths.map(width => ({ width }));
+
+        // Crear libro y exportar
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+        XLSX.writeFile(wb, `inventario_${new Date().toISOString().split('T')[0]}.xlsx`);
+    });
+
+    // Exportar a PDF
+    btnPDF.addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF("landscape");
+        
+        // Título
+        doc.setFontSize(16);
+        doc.setTextColor(44, 62, 80);
+        doc.setFont("helvetica", "bold");
+        doc.text("Reporte de Inventario - Mi Tienda", 14, 15);
+        
+        // Fecha
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 14, 22);
+
+        doc.autoTable({
+            html: "#tabla-inventario-completa",
+            theme: "grid",
+            headStyles: { 
+                fillColor: [44, 62, 80],
+                textColor: 255,
+                fontStyle: "bold",
+                halign: "center"
+            },
+            bodyStyles: { 
+                fontSize: 9,
+                valign: "middle",
+                cellPadding: 3
+            },
+            startY: 30,
+            styles: { 
+                overflow: "linebreak",
+                cellWidth: "wrap"
+            },
+            margin: { top: 30 }
+        });
+
+        // Pie de página
+        const pageCount = doc.internal.getNumberOfPages();
+        for(let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 10);
+        }
+
+        doc.save(`inventario_${new Date().toISOString().split('T')[0]}.pdf`);
+    });
+});
+</script>
+
+<style>
+.card {
+    border: none;
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.table-responsive {
+    border-radius: 0 0 12px 12px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+}
+
+.table td {
+    vertical-align: middle;
+    border-top: 1px solid #f8f9fa;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.input-group-text {
+    background: transparent;
+    border-right: none;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.rounded-4 {
+    border-radius: 12px !important;
+}
+</style>
+{% endblock %}

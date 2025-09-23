@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Producto - {{ producto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- Encabezado con breadcrumb -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">
+                <i class="fas fa-edit me-2 text-primary"></i> Editar Producto
+            </h2>
+        </div>
+        
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark">
+                        <i class="fas fa-box-open me-2 text-primary"></i> 
+                        Editando: <span class="text-primary">{{ producto.nombre }}</span>
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div class="row">
+                            <!-- Columna izquierda - Información básica -->
+                            <div class="col-lg-6">
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2 mb-3 text-dark fw-semibold">
+                                        <i class="fas fa-info-circle me-2 text-primary"></i>Información Básica
+                                    </h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="nombre" class="form-label fw-medium text-dark">Nombre del Producto <span class="text-danger">*</span></label>
+                                        <input type="text" name="nombre" id="nombre" value="{{ producto.nombre }}" 
+                                               class="form-control rounded-2 border" placeholder="Ingrese el nombre del producto" required>
+                                        <div class="invalid-feedback">
+                                            Por favor ingrese un nombre para el producto.
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="precio" class="form-label fw-medium text-dark">Precio ($) <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light border-end-0">$</span>
+                                                <input type="number" step="0.01" min="0" name="precio" id="precio" value="{{ producto.precio }}" 
+                                                       class="form-control rounded-2 border-start-0" placeholder="0.00" required>
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                Por favor ingrese un precio válido.
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="stock" class="form-label fw-medium text-dark">Stock <span class="text-danger">*</span></label>
+                                            <input type="number" name="stock" id="stock" value="{{ producto.stock }}" min="0"
+                                                   class="form-control rounded-2 border" placeholder="Cantidad en inventario" required>
+                                            <div class="invalid-feedback">
+                                                Por favor ingrese una cantidad válida.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="categoria" class="form-label fw-medium text-dark">Categoría <span class="text-danger">*</span></label>
+                                        <input type="text" name="categoria" id="categoria" value="{{ producto.categoria }}" 
+                                               class="form-control rounded-2 border" placeholder="Ej: Herramientas, Lubricantes" required>
+                                        <div class="invalid-feedback">
+                                            Por favor ingrese una categoría.
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="descripcion" class="form-label fw-medium text-dark">Descripción <span class="text-danger">*</span></label>
+                                        <textarea name="descripcion" id="descripcion" rows="4" 
+                                                  class="form-control rounded-2 border" placeholder="Describa las características del producto..." required>{{ producto.descripcion }}</textarea>
+                                        <div class="invalid-feedback">
+                                            Por favor ingrese una descripción.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Columna derecha - Imagen y estado -->
+                            <div class="col-lg-6">
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2 mb-3 text-dark fw-semibold">
+                                        <i class="fas fa-image me-2 text-primary"></i>Imagen del Producto
+                                    </h6>
+                                    
+                                    <div class="mb-4 text-center">
+                                        <label class="form-label fw-medium text-dark">Imagen Actual</label>
+                                        <div class="border rounded-3 p-3 bg-light">
+                                            {% if producto.foto %}
+                                                <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
+                                                     class="img-fluid rounded-2 shadow-sm" style="max-height: 200px;" alt="Imagen actual del producto">
+                                                <p class="small text-muted mt-2 mb-0">Archivo: {{ producto.foto }}</p>
+                                            {% else %}
+                                                <div class="py-5 text-center">
+                                                    <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                                                    <p class="text-muted">No hay imagen disponible</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="foto" class="form-label fw-medium text-dark">Cambiar Imagen</label>
+                                        <input type="file" name="foto" id="foto" class="form-control rounded-2 border" accept="image/*">
+                                        <div class="form-text">
+                                            Formatos: JPG, PNG, WEBP. Tamaño máximo: 5MB. Dejar vacío para mantener la imagen actual.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Estado del producto -->
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2 mb-3 text-dark fw-semibold">
+                                        <i class="fas fa-chart-line me-2 text-primary"></i>Estado del Producto
+                                    </h6>
+                                    
+                                    <div class="alert 
+                                        {% if producto.stock > 10 %}alert-success
+                                        {% elif producto.stock > 0 %}alert-warning
+                                        {% else %}alert-danger{% endif %} rounded-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <h6 class="alert-heading mb-1">Estado actual del inventario</h6>
+                                                <p class="mb-0 small">
+                                                    {% if producto.stock > 10 %}
+                                                        <i class="fas fa-check-circle me-1"></i> Stock suficiente ({{ producto.stock }} unidades)
+                                                    {% elif producto.stock > 0 %}
+                                                        <i class="fas fa-exclamation-triangle me-1"></i> Stock bajo ({{ producto.stock }} unidades)
+                                                    {% else %}
+                                                        <i class="fas fa-times-circle me-1"></i> Producto agotado
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-3">
+                            <a href="{{ url_for('admin.listar_productos') }}" class="btn btn-outline-secondary rounded-2 px-4">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-2 px-4 py-2">
+                                <i class="fas fa-save me-2"></i> Actualizar Producto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos adicionales -->
+<style>
+    .form-label {
+        font-weight: 500;
+    }
+    .card {
+        border: none;
+    }
+    .breadcrumb {
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+    .border-bottom {
+        border-color: #e9ecef !important;
+    }
+</style>
+
+<!-- Script para validación de formularios -->
+<script>
+    // Validación de formularios con Bootstrap
+    (function () {
+        'use strict'
+        
+        // Seleccionar todos los formularios a los que queremos aplicar estilos de validación de Bootstrap
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+{% endblock %}

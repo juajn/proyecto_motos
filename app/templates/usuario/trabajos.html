@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Panel Usuario{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-5 fw-bold">Bienvenido, {{ usuario.nombre }}</h2>
+
+    <!-- Mis trabajos -->
+    {% if trabajos %}
+    <h3 class="mt-5 mb-3">Mis trabajos</h3>
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>#</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Foto</th>
+                    <th>Fecha de creación</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in trabajos %}
+                <tr>
+                    <td class="text-center fw-semibold">{{ loop.index }}</td>
+                    <td>{{ t.descripcion }}</td>
+                    <td class="text-center">
+                        {% if t.costo %}
+                            ${{ '%.2f'|format(t.costo) }}
+                        {% else %}
+                            <span class="text-muted">No asignado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if t.foto %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ t.foto) }}" 
+                                 alt="Foto trabajo" 
+                                 class="img-thumbnail shadow-sm" 
+                                 style="width: 80px; height: auto; border-radius: 8px;">
+                        {% else %}
+                            <span class="text-muted">Sin foto</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if t.fecha_creacion %}
+                            <small class="text-muted">{{ t.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</small>
+                        {% else %}
+                            <span class="text-muted">Sin fecha</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if t.estado == 'pendiente' %}
+                            <span class="badge bg-warning text-dark px-3 py-2 shadow-sm">Pendiente</span>
+                        {% else %}
+                            <span class="badge bg-success px-3 py-2 shadow-sm">Completado</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-4">
+        <a href="{{ url_for('usuario.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Dashboard
+        </a>
+    </div>
+    {% else %}
+    <div class="mt-5 text-center">
+        <p class="text-muted fs-5"><i class="bi bi-briefcase"></i> No tienes trabajos registrados aún.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Estilos adicionales -->
+<style>
+  .product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+</style>
+
+{% endblock %}

@@ -1,0 +1,707 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid px-4 my-4">
+
+    <!-- ==================== HEADER MEJORADO ==================== -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-chart-line me-2"></i> Panel de Control
+            </h2>
+            <p class="text-muted mb-0">Bienvenido {{ usuario.nombre }}, aquí puedes gestionar todas las operaciones del sistema</p>
+        </div>
+       
+    </div>
+
+    <!-- ==================== TARJETAS DE RESUMEN ==================== -->
+    <div class="row mb-4">
+        <!-- Tarjeta Usuarios -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-primary shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Usuarios</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.usuarios }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta Productos -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-success shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Total Productos</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.productos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta Trabajos -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-warning shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Total Trabajos</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.trabajos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tools fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta Ventas -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start border-4 border-info shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Total Ventas</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.ventas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== GRÁFICOS Y ACCIONES ==================== -->
+    <div class="row">
+        <!-- Gráfico Usuarios -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold"><i class="fas fa-users me-2"></i>Distribución de Usuarios</h6>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalUsuario">
+                        <i class="fas fa-user-plus me-1"></i> Nuevo
+                    </button>
+                </div>
+                <div class="card-body">
+                    <canvas id="usuariosChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico Productos -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold"><i class="fas fa-box me-2"></i>Tipos de Productos</h6>
+                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalProducto">
+                        <i class="fas fa-plus me-1"></i> Nuevo
+                    </button>
+                </div>
+                <div class="card-body">
+                    <canvas id="productosChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico Trabajos -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold"><i class="fas fa-tools me-2"></i>Trabajos (Últimos 5 Días)</h6>
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalTrabajo">
+                        <i class="fas fa-plus me-1"></i> Nuevo
+                    </button>
+                </div>
+                <div class="card-body">
+                    <canvas id="trabajosChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico Ventas -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold"><i class="fas fa-shopping-cart me-2"></i>Ventas (Últimos 7 Días)</h6>
+                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalVenta">
+                        <i class="fas fa-plus me-1"></i> Nueva
+                    </button>
+                </div>
+                <div class="card-body">
+                    <canvas id="ventasChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+
+<!-- ========== MODALES ========== -->
+
+<!-- Modal Usuario -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content shadow-lg border-0 rounded-3">
+      <form method="POST" action="{{ url_for('admin.crear_usuario') }}" enctype="multipart/form-data">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="fas fa-user-plus me-2"></i> Registrar Usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Nombre completo</label>
+                <input type="text" class="form-control" name="nombre" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Correo electrónico</label>
+                <input type="email" class="form-control" name="correo" required>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Contraseña</label>
+                <input type="password" class="form-control" name="contraseña" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Rol</label>
+                <select name="rol" class="form-select" required>
+                  <option value="admin">Administrador</option>
+                  <option value="mecanico">Mecánico</option>
+                  <option value="usuario">Usuario</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Imagen de perfil</label>
+            <input type="file" class="form-control" name="imagen" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Producto -->
+<div class="modal fade" id="modalProducto" tabindex="-1" aria-labelledby="modalProductoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content shadow-lg border-0 rounded-3">
+      <form method="POST" action="{{ url_for('admin.crear_producto') }}" enctype="multipart/form-data">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold"><i class="fas fa-box-open me-2"></i> Nuevo Producto</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Nombre del producto</label>
+                <input type="text" name="nombre" class="form-control" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Categoría</label>
+                <select name="categoria" class="form-select" required>
+                  <option value="">Seleccione una categoría</option>
+                  {% for cat in categorias %}
+                  <option value="{{ cat }}">{{ cat }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Precio ($)</label>
+                <input type="number" step="0.01" name="precio" class="form-control" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Stock disponible</label>
+                <input type="number" name="stock" class="form-control" required>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Descripción</label>
+            <textarea name="descripcion" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Imagen del producto</label>
+            <input type="file" name="imagen" class="form-control" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Guardar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Trabajo -->
+<div class="modal fade" id="modalTrabajo" tabindex="-1" aria-labelledby="modalTrabajoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content shadow-lg border-0 rounded-3">
+      <form method="POST" action="{{ url_for('admin.crear_trabajo') }}" enctype="multipart/form-data">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title fw-bold"><i class="fas fa-tools me-2"></i> Nuevo Trabajo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Cliente</label>
+                <select name="cliente_id" class="form-select" required>
+                  <option value="">Seleccione un cliente</option>
+                  {% for c in clientes %}
+                  <option value="{{ c.id }}">{{ c.nombre }} - {{ c.correo }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Mecánico asignado</label>
+                <select name="mecanico_id" class="form-select" required>
+                  <option value="">Seleccione un mecánico</option>
+                  {% for m in mecanicos %}
+                  <option value="{{ m.id }}">{{ m.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Estado</label>
+                <select name="estado" class="form-select" required>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="en proceso">En proceso</option>
+                  <option value="completado">Completado</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Precio ($)</label>
+                <input type="number" step="0.01" name="costo" class="form-control" required>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Descripción del trabajo</label>
+            <textarea name="descripcion" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Foto del trabajo</label>
+            <input type="file" name="foto" class="form-control" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">Guardar Trabajo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Venta -->
+<div class="modal fade" id="modalVenta" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content shadow-lg border-0 rounded-3">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title fw-bold"><i class="fas fa-cash-register me-2"></i> Nueva Venta</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.nueva_venta') }}">
+        <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-header bg-light">
+                  <h6 class="mb-0"><i class="fas fa-user me-2"></i>Información del Cliente</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Seleccionar Cliente</label>
+                    <select name="cliente_id" class="form-select" required>
+                      <option value="">Seleccione un cliente</option>
+                      {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}">{{ cliente.nombre }} ({{ cliente.correo }})</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-header bg-light">
+                  <h6 class="mb-0"><i class="fas fa-user-tie me-2"></i>Información del Vendedor</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Seleccionar Vendedor</label>
+                    <select name="vendedor_id" class="form-select" required>
+                      <option value="">Seleccione un vendedor</option>
+                      {% for vendedor in vendedores %}
+                        <option value="{{ vendedor.id }}">{{ vendedor.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+              <h6 class="mb-0"><i class="fas fa-boxes me-2"></i>Productos de la Venta</h6>
+              <button type="button" id="agregar-producto" class="btn btn-sm btn-outline-dark">
+                <i class="fas fa-plus me-1"></i> Agregar Producto
+              </button>
+            </div>
+            <div class="card-body">
+              <div id="productos-container">
+                <div class="row mb-3 producto-row align-items-end">
+                  <div class="col-md-5">
+                    <label class="form-label small fw-bold">Producto</label>
+                    <select name="productos[0][id]" class="form-select" required>
+                      <option value="">Seleccione un producto</option>
+                      {% for producto in productos %}
+                        <option value="{{ producto.id }}" data-precio="{{ producto.precio }}">
+                          {{ producto.nombre }} - ${{ "%.2f"|format(producto.precio) }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small fw-bold">Cantidad</label>
+                    <input type="number" name="productos[0][cantidad]" class="form-control cantidad" min="1" value="1" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small fw-bold">Precio Unitario</label>
+                    <input type="number" name="productos[0][precio_unitario]" class="form-control precio" step="0.01" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small fw-bold">Subtotal</label>
+                    <input type="text" class="form-control subtotal" readonly placeholder="$0.00">
+                  </div>
+                  <div class="col-md-1 d-flex align-items-center justify-content-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger eliminar-producto">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mt-4">
+                <div class="col-md-8"></div>
+                <div class="col-md-4">
+                  <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                    <span class="fw-bold">TOTAL:</span>
+                    <span id="total-venta" class="fw-bold fs-5 text-success">$0.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-info text-white">
+            <i class="fas fa-save me-1"></i> Guardar Venta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Configuración de gráficos
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        padding: 20,
+        usePointStyle: true,
+      }
+    }
+  }
+};
+
+// Gráfico de usuarios
+new Chart(document.getElementById('usuariosChart'), {
+  type: 'doughnut',
+  data: {
+    labels: {{ roles|tojson }},
+    datasets: [{
+      data: {{ conteo_roles|tojson }},
+      backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#6f42c1', '#fd7e14'],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  },
+  options: chartOptions
+});
+
+// Gráfico de productos
+new Chart(document.getElementById('productosChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ categorias|tojson }},
+    datasets: [{
+      label: 'Cantidad',
+      data: {{ conteo_categorias|tojson }},
+      backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#6f42c1', '#fd7e14', '#dc3545'],
+      borderWidth: 0,
+      borderRadius: 5
+    }]
+  },
+  options: {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          drawBorder: false
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      }
+    }
+  }
+});
+
+// Gráfico de trabajos
+new Chart(document.getElementById('trabajosChart'), {
+  type: 'line',
+  data: {
+    labels: {{ labels_fechas|tojson }},
+    datasets: [{
+      label: 'Trabajos',
+      data: {{ conteo_trabajos|tojson }},
+      borderColor: '#fd7e14',
+      backgroundColor: 'rgba(253, 126, 20, 0.1)',
+      fill: true,
+      tension: 0.4,
+      borderWidth: 3,
+      pointBackgroundColor: '#fff',
+      pointBorderWidth: 3,
+      pointRadius: 5
+    }]
+  },
+  options: chartOptions
+});
+
+// Gráfico de ventas
+new Chart(document.getElementById('ventasChart'), {
+  type: 'line',
+  data: {
+    labels: {{ labels_ventas|tojson }},
+    datasets: [{
+      label: 'Ventas',
+      data: {{ conteo_ventas|tojson }},
+      borderColor: '#0dcaf0',
+      backgroundColor: 'rgba(13, 202, 240, 0.1)',
+      fill: true,
+      tension: 0.4,
+      borderWidth: 3,
+      pointBackgroundColor: '#fff',
+      pointBorderWidth: 3,
+      pointRadius: 5
+    }]
+  },
+  options: chartOptions
+});
+
+// ==================== JS PARA PRODUCTOS DINÁMICOS ====================
+document.addEventListener("DOMContentLoaded", () => {
+  let index = 1;
+  const container = document.getElementById("productos-container");
+  const btnAgregar = document.getElementById("agregar-producto");
+
+  // Función para calcular subtotales y total
+  function calcularTotales() {
+    let totalVenta = 0;
+    
+    document.querySelectorAll(".producto-row").forEach(row => {
+      const cantidad = parseFloat(row.querySelector(".cantidad").value) || 0;
+      const precio = parseFloat(row.querySelector(".precio").value) || 0;
+      const subtotal = cantidad * precio;
+      
+      row.querySelector(".subtotal").value = `$${subtotal.toFixed(2)}`;
+      totalVenta += subtotal;
+    });
+    
+    document.getElementById("total-venta").textContent = `$${totalVenta.toFixed(2)}`;
+  }
+  
+  // Event listeners para cambios en cantidad y precio
+  document.addEventListener("input", function(e) {
+    if (e.target.classList.contains("cantidad") || e.target.classList.contains("precio")) {
+      calcularTotales();
+    }
+  });
+  
+  // Event listener para cambio de producto (auto-completar precio)
+  document.addEventListener("change", function(e) {
+    if (e.target.tagName === "SELECT" && e.target.name.includes("productos")) {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      const precioInput = e.target.closest(".producto-row").querySelector(".precio");
+      
+      if (selectedOption && selectedOption.dataset.precio) {
+        precioInput.value = selectedOption.dataset.precio;
+        calcularTotales();
+      }
+    }
+  });
+
+  // Agregar nuevo producto
+  btnAgregar.addEventListener("click", () => {
+    const firstRow = document.querySelector(".producto-row");
+    const newRow = firstRow.cloneNode(true);
+    
+    newRow.querySelectorAll("select, input").forEach(input => {
+      const name = input.getAttribute("name");
+      if (name) input.setAttribute("name", name.replace(/\[\d+\]/, `[${index}]`));
+      if (input.tagName === "INPUT" && !input.classList.contains("subtotal")) {
+        input.value = "";
+      } else if (input.classList.contains("subtotal")) {
+        input.value = "$0.00";
+      }
+      if (input.tagName === "SELECT") input.selectedIndex = 0;
+    });
+    
+    newRow.querySelector(".eliminar-producto").addEventListener("click", function() {
+      if (document.querySelectorAll(".producto-row").length > 1) {
+        this.closest(".producto-row").remove();
+        calcularTotales();
+      }
+    });
+    
+    container.appendChild(newRow);
+    index++;
+  });
+
+  // Configurar eventos para eliminar productos existentes
+  document.querySelectorAll(".eliminar-producto").forEach(btn => {
+    btn.addEventListener("click", function() {
+      if (document.querySelectorAll(".producto-row").length > 1) {
+        this.closest(".producto-row").remove();
+        calcularTotales();
+      } else {
+        alert("Debe haber al menos un producto en la venta.");
+      }
+    });
+  });
+
+  // Inicializar cálculo de totales
+  calcularTotales();
+});
+</script>
+
+<style>
+.card {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+}
+
+.card-header {
+  border-bottom: 1px solid #e3e6f0;
+}
+
+.border-start {
+  border-left: 0.25rem solid !important;
+}
+
+.btn {
+  border-radius: 0.35rem;
+  font-weight: 500;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.5em 0.75em;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.form-control, .form-select {
+  border-radius: 0.35rem;
+  border: 1px solid #d1d3e2;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #bac8f3;
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container py-5">
+    <!-- Título -->
+    <h2 class="text-center mb-5 fw-bold text-gradient">
+        <i class="bi bi-cart-check-fill"></i> Mi Carrito
+    </h2>
+
+    {% if carrito %}
+    <!-- Lista de productos -->
+    <div class="row g-4">
+        {% for item in carrito %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 product-card">
+                <div class="row g-0 align-items-center">
+                    <!-- Imagen -->
+                    <div class="col-md-2 text-center p-3">
+                        <img src="{{ url_for('static', filename='uploads/' ~ item.foto) }}"
+                             class="img-fluid rounded-3 shadow-sm"
+                             alt="{{ item.nombre }}">
+                    </div>
+                    <!-- Detalles -->
+                    <div class="col-md-7">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-dark mb-2">{{ item.nombre }}</h5>
+                            <p class="mb-1"><span class="fw-semibold">Precio unitario:</span> ${{ item.precio }}</p>
+                            <p class="mb-1"><span class="fw-semibold">Cantidad:</span> {{ item.cantidad }}</p>
+                            <p class="text-muted"><span class="fw-semibold">Subtotal:</span> ${{ item.precio * item.cantidad }}</p>
+                        </div>
+                    </div>
+                    <!-- Botón eliminar -->
+                    <div class="col-md-3 text-center">
+                        <form action="{{ url_for('usuario.eliminar_del_carrito', producto_id=item.id) }}" method="POST">
+                            <button class="btn btn-outline-danger rounded-pill px-4 shadow-sm">
+                                <i class="bi bi-trash3-fill"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Resumen de compra -->
+    <div class="card border-0 shadow-lg rounded-4 mt-5 resumen-card">
+        <div class="card-body p-4">
+            <h4 class="fw-bold text-center mb-4">Resumen de Compra</h4>
+            <div class="d-flex justify-content-between mb-3">
+                <span class="fw-semibold">Productos en carrito:</span>
+                <span>{{ carrito|length }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <span class="fw-semibold">Total:</span>
+                <span class="fs-4 text-success fw-bold">${{ total }}</span>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                <!-- Botón Stripe -->
+                <form action="{{ url_for('usuario.pagar') }}" method="POST">
+                    <button class="btn btn-success btn-lg rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-credit-card-fill"></i> Finalizar Compra
+                    </button>
+                </form>
+
+                <!-- Botón vaciar carrito -->
+                <form action="{{ url_for('usuario.vaciar_carrito') }}" method="POST">
+                    <button class="btn btn-outline-dark btn-lg rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-x-circle-fill"></i> Vaciar Carrito
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seguir comprando -->
+    <div class="text-center mt-5">
+        <a href="{{ url_for('usuario.dashboard') }}" class="btn btn-secondary btn-lg rounded-pill shadow-sm px-4">
+            <i class="bi bi-arrow-left-circle"></i> Seguir Comprando
+        </a>
+    </div>
+
+    {% else %}
+    <!-- Carrito vacío -->
+    <div class="alert alert-light border-0 shadow-sm text-center p-5 rounded-4 empty-cart">
+        <i class="bi bi-bag-x fs-1 text-muted d-block mb-3"></i>
+        <h5 class="mb-3 fw-bold text-secondary">Tu carrito está vacío</h5>
+        <a href="{{ url_for('usuario.dashboard') }}" class="btn btn-primary btn-lg rounded-pill shadow-sm">
+            <i class="bi bi-box-seam"></i> Ir a productos
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Estilos adicionales -->
+<style>
+.text-gradient {
+    background: linear-gradient(45deg, #080c11ff, #3b3e3dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+.resumen-card {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+.empty-cart {
+    background: #f8f9fa;
+}
+
+</style>
+
+{% endblock %}
