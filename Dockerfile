@@ -18,5 +18,5 @@ EXPOSE 5000
 
 
 # Comando para ejecutar la app
-CMD ["python", "app/main.py"]
+CMD ["python", "main.py"]
 
