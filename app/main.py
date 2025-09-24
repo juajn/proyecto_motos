@@ -30,7 +30,6 @@ def create_app():
     app.register_blueprint(usuario_bp)
 
     return app  
-
 app = create_app()
 @app.template_filter('shuffle')
 def shuffle_filter(seq):
