@@ -15,7 +15,7 @@ RUN pip install --default-timeout=100 --no-cache-dir -r requirements.txt
 COPY . .
 
 # Exponer el puerto donde corre Flask (por defecto 5000)
-EXPOSE 5000
+EXPOSE 5050
 
 
 # Comando para ejecutar la app

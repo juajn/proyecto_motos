@@ -5,7 +5,7 @@ services:
       context: . #https://github.com/juajn/proyecto_motos.git
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "5050:5050"
     volumes:
       - .:/app
     environment:
