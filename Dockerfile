@@ -1,5 +1,5 @@
 # ---- Etapa base ----
-FROM python:3.11-slim
+FROM python:3.13-alpine
 
 # Establecer el directorio de trabajo en el contenedor
 WORKDIR /app
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Instalar dependencias
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --default-timeout=100 --no-cache-dir -r requirements.txt
 
 # Copiar el resto del proyecto al contenedor
 COPY . .
@@ -16,11 +16,7 @@ COPY . .
 # Exponer el puerto donde corre Flask (por defecto 5000)
 EXPOSE 5000
 
-# Establecer variables de entorno (puedes modificarlas según tu app)
-ENV FLASK_APP=app/main.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_ENV=production
 
 # Comando para ejecutar la app
-CMD ["flask", "run"]
+CMD ["python", "app/main.py"]
 
