@@ -5,7 +5,7 @@ from config import Config
 from extensions import db, login_manager, bcrypt
 
 app = Flask(__name__)
-
+app.secret_key = "clave-ultra-secreta"
 app_name = os.getenv("APP_NAME", "Aplicacion Flask")
 def create_app():
     app = Flask(__name__, template_folder='templates')
