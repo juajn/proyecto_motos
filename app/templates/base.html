@@ -33,12 +33,16 @@
         
         /* Header Styles */
         .navbar {
+            position: relative;
+            z-index: 1050;
             background: linear-gradient(135deg, var(--primary-color) 0%, #1a202c 100%);
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
             height: var(--header-height);
             padding: 0 1.5rem;
         }
-        
+        .navbar-collapse{
+            z-index: 1060;
+        }
         .navbar-brand {
             font-weight: 700;
             color: white !important;
@@ -80,6 +84,7 @@
         .navbar-toggler {
             border: none;
             color: white;
+            padding: 0.25rem 0.5rem;
         }
         
         .navbar-toggler:focus {
@@ -110,12 +115,16 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
-        .dropdown-menu {
-            border: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            padding: 0.5rem;
+           .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        width: 100%;
+        margin-top: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 1070;
         }
+
         
         .dropdown-item {
             border-radius: 6px;
@@ -302,18 +311,66 @@
             background: linear-gradient(to right, #34495e, #2d4373);
         }
         
-        /* Responsive adjustments */
         @media (max-width: 992px) {
             .navbar-collapse {
-                background: var(--primary-color);
-                padding: 1rem;
-                border-radius: 8px;
-                margin-top: 1rem;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            }
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--primary-color);
+            padding: 1rem;
+            border-radius: 0 0 8px 8px;
+            margin-top: 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-height: 70vh;
+            overflow-y: auto;
+            z-index: 1060;
+        }
             
             .container-fluid {
                 padding: 0 1rem;
+            }
+            
+            .navbar-nav {
+                align-items: flex-start !important;
+            }
+            
+            .nav-item {
+                width: 100%;
+            }
+            
+            .nav-link {
+                padding: 0.75rem 1rem;
+                justify-content: flex-start;
+            }
+            
+            .dropdown-menu {
+                position: static !important;
+                transform: none !important;
+                width: 100%;
+                margin-top: 0.5rem;
+                background-color: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .dropdown-item {
+                color: rgba(255, 255, 255, 0.85);
+                padding: 0.75rem 1rem;
+            }
+            
+            .dropdown-item:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+            
+            .user-dropdown {
+                width: 100%;
+                justify-content: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            
+            .user-dropdown span {
+                display: inline !important;
             }
         }
         
@@ -333,7 +390,7 @@
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark">
+<nav class="navbar navbar-expand-lg navbar-dark" style="position: relative; z-index: 1000;">
     <div class="container-fluid">
         <a class="navbar-brand" href="
             {% if current_user.is_authenticated %}
@@ -358,12 +415,13 @@
             {% endif %}
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav align-items-center">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
                 
                 {% if current_user.is_authenticated %}
                     <!-- Menú para Admin -->
@@ -423,10 +481,10 @@
                             {% else %}
                                 <i class="bi bi-person-circle me-2" style="font-size: 1.8rem;"></i>
                             {% endif %}
-                            <span class="d-none d-md-inline">{{ current_user.nombre }}</span>
+                            <span class="d-none d-lg-inline">{{ current_user.nombre }}</span>
                             <i class="bi bi-chevron-down ms-1"></i>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu dropdown-menu-end" style="z-index: 1070;">
                             <li>
                                 <a class="dropdown-item" href="
                                     {% if current_user.rol == 'admin' %}{{ url_for('admin.dashboard') }}
@@ -434,16 +492,22 @@
                                     {% elif current_user.rol == 'usuario' %}{{ url_for('usuario.dashboard') }}
                                     {% endif %}
                                 ">
-                                 
-                                <a class="dropdown-item logout" href="{{ url_for('auth.logout') }}">
-                                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                                    <i class="bi bi-speedometer2"></i> Dashboard
                                 </a>
-                                <a class="dropdown-item "href="
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="
                                     {% if current_user.rol == 'admin' %}{{ url_for('admin.configuracion') }}
                                     {% elif current_user.rol == 'mecanico' %}{{ url_for('mecanico.configuracion') }}
                                     {% elif current_user.rol == 'usuario' %}{{ url_for('usuario.configuracion') }}
                                     {% endif %}">
                                     <i class="bi bi-gear"></i> Configuración
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item logout" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                                 </a>
                             </li>
                         </ul>
