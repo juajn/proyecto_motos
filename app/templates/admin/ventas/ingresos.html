@@ -29,18 +29,15 @@
             <button id="btn-exportar-pdf" class="btn btn-outline-primary rounded-3 shadow-sm d-flex align-items-center">
                 <i class="fas fa-file-pdf me-2"></i> PDF
             </button>
-            <!-- Volver al dashboard -->
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary rounded-3 shadow-sm d-flex align-items-center">
-                <i class="fas fa-arrow-left me-2"></i> Volver
-            </a>
+            
         </div>
     </div>
 
     <!-- ==================== TARJETAS RESUMEN ==================== -->
-    <div class="row mb-4">
+    <div class="row mb-4 d-flex gap-2 me-2">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-primary shadow-sm h-100 py-2">
-                <div class="card-body">
+            <div class="card d-flex justify-content-between position-relative z-0 d-flex bg-primary bg-opacity-10 border-start border-4 border-primary shadow-sm ">
+                <div class="card-body d-flex justify-content-between align-items-center">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Ventas</div>
@@ -54,7 +51,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-success shadow-sm h-100 py-2">
+            <div class="card bg-success bg-opacity-10 border-start border-4 border-success shadow-sm h-100 py-2">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
@@ -69,7 +66,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-danger shadow-sm h-100 py-2">
+            <div class="card bg-danger bg-opacity-10 border-start border-4 border-danger shadow-sm h-100 py-2">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
@@ -84,7 +81,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-info shadow-sm h-100 py-2">
+            <div class="card bg-primary-light bg-opacity-10 border-start border-4 border-info shadow-sm h-100 py-2">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
@@ -813,11 +810,26 @@ document.addEventListener("DOMContentLoaded", () => {
     background-color: rgba(58, 59, 69, 0.05);
 }
 .border-start {
-    border-left: 0.25rem solid !important;
+    border-left: 0.25rem  !important;
 }
 .nav-tabs .nav-link.active {
-    border-bottom: 3px solid #0d6efd;
+    border-bottom: 3px  #0d6efd;
     font-weight: 600;
 }
+
+.container-fluid, .content-wrapper, main {
+  position: relative;
+  z-index: 1;
+}
+
+
+.navbar, .sidebar, .offcanvas {
+  z-index: 1040; 
+}
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+  z-index: 1030;
+}
+
 </style>
 {% endblock %}

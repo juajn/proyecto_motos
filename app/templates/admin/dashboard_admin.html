@@ -3,7 +3,7 @@
 <div class="container-fluid px-4 my-4">
 
     <!-- ==================== HEADER MEJORADO ==================== -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
         <div>
             <h2 class="fw-bold text-dark mb-1">
                 <i class="fas fa-chart-line me-2"></i> Panel de Control
@@ -16,8 +16,8 @@
     <!-- ==================== TARJETAS DE RESUMEN ==================== -->
     <div class="row mb-4">
         <!-- Tarjeta Usuarios -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-primary shadow-sm h-100 py-2">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
@@ -34,7 +34,7 @@
 
         <!-- Tarjeta Productos -->
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-success shadow-sm h-100 py-2">
+            <div class="card bg-info bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
@@ -51,7 +51,7 @@
 
         <!-- Tarjeta Trabajos -->
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-warning shadow-sm h-100 py-2">
+            <div class="card bg-warning bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
@@ -68,7 +68,7 @@
 
         <!-- Tarjeta Ventas -->
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-4 border-info shadow-sm h-100 py-2">
+            <div class="card bg-primary-light bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
@@ -703,5 +703,20 @@ document.addEventListener("DOMContentLoaded", () => {
   font-size: 0.8rem;
   letter-spacing: 0.5px;
 }
+
+.container-fluid, .content-wrapper, main {
+  position: relative;
+  z-index: 1;
+}
+
+
+.navbar, .sidebar, .offcanvas {
+  z-index: 1040; 
+}
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+  z-index: 1030;
+}
+
 </style>
 {% endblock %}

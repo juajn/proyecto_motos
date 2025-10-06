@@ -17,7 +17,7 @@
     <!-- Tarjetas de resumen -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card bg-primary bg-opacity-10 border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -32,7 +32,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card bg-danger bg-opacity-10 border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -49,7 +49,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card  bg-warning bg-opacity-10 border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -69,7 +69,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card bg-primary-light bg-opacity-10 border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -406,5 +406,20 @@ document.addEventListener("DOMContentLoaded", () => {
 .rounded-4 {
     border-radius: 12px !important;
 }
+
+.container-fluid, .content-wrapper, main {
+  position: relative;
+  z-index: 1;
+}
+
+
+.navbar, .sidebar, .offcanvas {
+  z-index: 1040; 
+}
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+  z-index: 1030;
+}
+
 </style>
 {% endblock %}

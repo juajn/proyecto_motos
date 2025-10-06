@@ -83,6 +83,20 @@
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
   }
+  .container-fluid, .content-wrapper, main {
+  position: relative;
+  z-index: 1;
+}
+
+
+.navbar, .sidebar, .offcanvas {
+  z-index: 1040; 
+}
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+  z-index: 1030;
+}
+
 </style>
 
 {% endblock %}

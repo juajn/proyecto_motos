@@ -280,6 +280,20 @@
         transform: scale(1.05);
         box-shadow: 0 0.15rem 0.5rem rgba(0, 0, 0, 0.15);
     }
+    .container-fluid, .content-wrapper, main {
+  position: relative;
+  z-index: 1;
+}
+
+
+.navbar, .sidebar, .offcanvas {
+  z-index: 1040; 
+}
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+  z-index: 1030;
+}
+
 </style>
 
 <script>
