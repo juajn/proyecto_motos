@@ -34,68 +34,55 @@
     </div>
 
     <!-- ==================== TARJETAS RESUMEN ==================== -->
-    <div class="row mb-4 d-flex gap-2 me-2">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card d-flex justify-content-between position-relative z-0 d-flex bg-primary bg-opacity-10 border-start border-4 border-primary shadow-sm ">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Ventas</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">{{ ventas|length }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+<div class="row mb-4 align-items-stretch">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100 bg-primary bg-opacity-10 border-start border-4 border-primary shadow-sm py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Ventas</div>
+                    <div class="h5 mb-0 fw-bold text-gray-800">{{ ventas|length }}</div>
                 </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card bg-success bg-opacity-10 border-start border-4 border-success shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Ingresos Totales</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_ventas) }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card bg-danger bg-opacity-10 border-start border-4 border-danger shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Gastos Totales</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_gastos) }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card bg-primary-light bg-opacity-10 border-start border-4 border-info shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Balance Neto</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_ventas - total_gastos) }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+                <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
             </div>
         </div>
     </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100 bg-success bg-opacity-10 border-start border-4 border-success shadow-sm py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs fw-bold text-success text-uppercase mb-1">Ingresos Totales</div>
+                    <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_ventas) }}</div>
+                </div>
+                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100 bg-danger bg-opacity-10 border-start border-4 border-danger shadow-sm py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs fw-bold text-danger text-uppercase mb-1">Gastos Totales</div>
+                    <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_gastos) }}</div>
+                </div>
+                <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100 bg-info bg-opacity-10 border-start border-4 border-info shadow-sm py-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-xs fw-bold text-info text-uppercase mb-1">Balance Neto</div>
+                    <div class="h5 mb-0 fw-bold text-gray-800">${{ "%.2f"|format(total_ventas - total_gastos) }}</div>
+                </div>
+                <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- ==================== FILTROS MEJORADOS ==================== -->
     <div class="card shadow-sm rounded-3 mb-4">
