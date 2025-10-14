@@ -11,7 +11,8 @@ COPY requirements.txt .
 RUN apk add --no-cache build-base gcc musl-dev libffi-dev
 
 # Instalar setuptools primero (requerido para compilar paquetes desde fuente)
-RUN pip install --no-cache-dir setuptools wheel
+RUN pip install --upgrade pip setuptools wheel pkg_resources
+
 
 # Instalar dependencias
 RUN pip install --default-timeout=100 --no-cache-dir -r requirements.txt
