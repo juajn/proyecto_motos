@@ -327,8 +327,17 @@ def crear_producto():
         stock = request.form['stock']
         imagen = request.files.get('imagen')
         categoria = request.form['categoria']
+        destacado = 'destacado' in request.form
         nombre_imagen = save_uploaded_file(imagen)
-        nuevo = Producto(nombre=nombre, descripcion=descripcion, precio=precio, stock=stock, foto=nombre_imagen, categoria=categoria)
+        nuevo = Producto(
+            nombre=nombre, 
+            descripcion=descripcion,
+            precio=precio, 
+            stock=stock, 
+            foto=nombre_imagen, 
+            categoria=categoria,
+            destacado=destacado
+            )
         db.session.add(nuevo)
         db.session.commit()
         flash('Producto creado.', 'success')
@@ -349,6 +358,7 @@ def editar_producto(id):
         producto.precio = request.form['precio']
         producto.stock = request.form['stock']
         producto.categoria = request.form['categoria']
+        producto.destacado = 'destacado' in request.form
         foto = request.files.get('foto')
         if foto and foto.filename != '':
             producto.foto = save_uploaded_file(foto)

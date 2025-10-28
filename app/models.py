@@ -21,9 +21,9 @@ class Producto(db.Model):
     stock = db.Column(db.Integer, nullable=True)
     foto = db.Column(db.String(200), nullable=True)
     categoria = db.Column(db.String(100), nullable=True)
-    destacado = db.Column(db.Boolean, default=False)  # Nuevo campo para productos destacados
+    destacado = db.Column(db.Boolean, default=False)  
 
-    # Relación inversa
+    
     detalles = db.relationship("DetalleVenta", back_populates="producto")
 
 from enum import Enum
@@ -68,7 +68,7 @@ class Venta(db.Model):
     trabajo_id = db.Column(db.Integer, db.ForeignKey('trabajo.id'), nullable=True)
     trabajo = db.relationship('Trabajo', backref='venta_asociada', uselist=False)
     detalles = db.relationship("DetalleVenta", back_populates="venta", lazy=True)
-    # 👇 Aquí va el cascade
+   
     detalles = db.relationship(
         'DetalleVenta',
         back_populates='venta',
@@ -87,7 +87,7 @@ class DetalleVenta(db.Model):
     descripcion = db.Column(db.String(255), nullable=True)
 
     venta_id = db.Column(db.Integer, db.ForeignKey("venta.id"), nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=True)  # 👈 permite NULL
+    producto_id = db.Column(db.Integer, db.ForeignKey("producto.id"), nullable=True)  
 
     venta = db.relationship("Venta", back_populates="detalles")
     producto = db.relationship("Producto", back_populates="detalles")

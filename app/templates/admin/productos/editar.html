@@ -146,7 +146,16 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div class="col-md-12 mb-3">
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" name="destacado" id="destacadoSwitch" 
+               value="1" {% if producto.destacado %}checked{% endif %}>
+        <label class="form-check-label fw-medium text-dark" for="destacadoSwitch">
+            Producto Destacado
+        </label>
+        <div class="form-text">Los productos destacados se mostrarán de forma especial en la página principal.</div>
+    </div>
+</div>
                         <!-- Botones de acción -->
                         <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-3">
                             <a href="{{ url_for('admin.listar_productos') }}" class="btn btn-outline-secondary rounded-2 px-4">
