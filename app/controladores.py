@@ -28,15 +28,26 @@ def allowed_file(filename):
 
 def save_uploaded_file(file):
     if file and allowed_file(file.filename):
-        filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-        upload_path = Config.UPLOAD_FOLDER
-        # Crear carpeta si no existe
-        if not os.path.exists(upload_path):
-            os.makedirs(upload_path)
-        file.save(os.path.join(upload_path, filename))
+       
+        timestamp = datetime.now().timestamp()
+        original_filename = secure_filename(file.filename)
+        filename = f"{timestamp}_{original_filename}"
+        
+        
+        upload_path = current_app.config['UPLOAD_FOLDER']
+        
+       
+        os.makedirs(upload_path, exist_ok=True)
+        
+        
+        file_path = os.path.join(upload_path, filename)
+        
+        
+        file.save(file_path)
+        
+        print(f"Archivo guardado en: {file_path}")  # Para debug
         return filename
     return None
-
 
 @auth_bp.route('/principal')
 def principal():
