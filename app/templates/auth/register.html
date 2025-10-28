@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario | Portal Corporativo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #f39c12;
+            --accent-color: #3498db;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3748;
+            --light-text: #718096;
+            --success-color: #38a169;
+            --error-color: #e53e3e;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 1rem;
+        }
+        
+        .register-container {
+            width: 100%;
+            max-width: 520px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a202c 100%);
+            color: #fff;
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        
+        .card-header i {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-header h4 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-header small {
+            opacity: 0.85;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-body {
+            padding: 2.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-text);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-control, .form-select {
+            padding: 0.875rem 1.25rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .input-group-text {
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-right: none;
+            padding: 0.875rem 1rem;
+        }
+        
+        .password-toggle {
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-left: none;
+        }
+        
+        .btn-custom {
+            background: linear-gradient(to right, var(--secondary-color), #e67e22);
+            border: none;
+            font-weight: 600;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(243, 156, 18, 0.2);
+            width: 100%;
+        }
+        
+        .btn-custom:hover {
+            background: linear-gradient(to right, #e67e22, #d35400);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-custom:active {
+            transform: translateY(0);
+        }
+        
+        .card-footer {
+            background: var(--light-bg);
+            font-size: 0.95rem;
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--light-text);
+        }
+        
+        .card-footer a {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .card-footer a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .card-footer a:hover {
+            color: var(--secondary-color);
+        }
+        
+        .card-footer a:hover::after {
+            width: 100%;
+        }
+        
+        .progress-bar-container {
+            height: 6px;
+            background-color: #edf2f7;
+            border-radius: 3px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #f39c12, #e67e22);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .password-strength {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+        
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-upload-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e2e8f0;
+            display: block;
+            margin: 0 auto 1rem;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            background: #edf2f7;
+            color: var(--dark-text);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px dashed #cbd5e0;
+        }
+        
+        .file-upload-label:hover {
+            background: #e2e8f0;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .terms-text {
+            font-size: 0.9rem;
+            color: var(--light-text);
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        
+        .terms-text a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .card-body {
+                padding: 2rem 1.5rem;
+            }
+            
+            .card-header {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-container">
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-person-plus"></i>
+            <h4 class="mb-0">Crear Cuenta</h4>
+            <small>Únete a nuestra plataforma</small>
+        </div>
+        <div class="card-body">
+
+            <form method="POST" action="{{ url_for('auth.registro') }}" enctype="multipart/form-data" id="registerForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre" class="form-label">Nombre completo</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Tu nombre" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="correo" class="form-label">Correo electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="correo" name="correo" placeholder="ejemplo@correo.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="contraseña" class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" id="contraseña" name="contraseña" placeholder="••••••••" required>
+                        <span class="input-group-text password-toggle" id="togglePassword">
+                            <i class="bi bi-eye"></i>
+                        </span>
+                    </div>
+                    <div class="progress-bar-container mt-2">
+                        <div class="progress-bar" id="passwordStrengthBar"></div>
+                    </div>
+                    <div class="password-strength" id="passwordStrengthText">Seguridad: baja</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="rol" class="form-label">Rol</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <select class="form-select" name="rol" id="rol" required>
+                            <option value="">Seleccione un rol</option>
+                            <option value="usuario">Usuario</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Foto de perfil (opcional)</label>
+                    <div class="file-upload">
+                        <img id="previewImage" class="file-upload-preview" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UyZThmMCIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNzE4MDk2Ij5TaW4gaW1hZ2VuPC90ZXh0Pjwvc3ZnPg==" alt="Vista previa">
+                        <label for="imagen" class="file-upload-label">
+                            <i class="bi bi-upload me-2"></i> Seleccionar imagen
+                        </label>
+                        <input type="file" class="file-input" id="imagen" name="imagen" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-custom btn-lg">
+                        <i class="bi bi-person-plus me-2"></i> Crear Cuenta
+                    </button>
+                </div>
+
+                <div class="terms-text">
+                    Al registrarte, aceptas nuestros <a href="#">Términos de servicio</a> y <a href="#">Política de privacidad</a>.
+                </div>
+            </form>
+        </div>
+
+        <div class="card-footer">
+            <span>¿Ya tienes cuenta?</span>
+            <a href="{{ url_for('auth.login') }}" class="ms-1">Inicia sesión</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Funcionalidad para mostrar/ocultar contraseña
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('contraseña');
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+
+    // Validación de fuerza de contraseña
+    document.getElementById('contraseña').addEventListener('input', function() {
+        const password = this.value;
+        const strengthBar = document.getElementById('passwordStrengthBar');
+        const strengthText = document.getElementById('passwordStrengthText');
+        
+        let strength = 0;
+        let messages = [];
+        
+        // Longitud
+        if (password.length >= 8) {
+            strength += 25;
+        } else {
+            messages.push("Mínimo 8 caracteres");
+        }
+        
+        // Letras mayúsculas y minúsculas
+        if (password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) {
+            strength += 25;
+        } else {
+            messages.push("Incluir mayúsculas y minúsculas");
+        }
+        
+        // Números
+        if (password.match(/([0-9])/)) {
+            strength += 25;
+        } else {
+            messages.push("Incluir números");
+        }
+        
+        // Caracteres especiales
+        if (password.match(/([!,@,#,$,%,^,&,*,?,_,~])/)) {
+            strength += 25;
+        } else {
+            messages.push("Incluir caracteres especiales");
+        }
+        
+        // Actualizar barra de progreso
+        strengthBar.style.width = strength + '%';
+        
+        // Actualizar texto
+        if (strength === 0) {
+            strengthText.textContent = "Seguridad: muy baja";
+            strengthBar.style.background = "#e53e3e";
+        } else if (strength <= 50) {
+            strengthText.textContent = "Seguridad: baja";
+            strengthBar.style.background = "#ed8936";
+        } else if (strength <= 75) {
+            strengthText.textContent = "Seguridad: media";
+            strengthBar.style.background = "#ecc94b";
+        } else {
+            strengthText.textContent = "Seguridad: alta";
+            strengthBar.style.background = "#38a169";
+        }
+    });
+
+    // Vista previa de imagen
+    document.getElementById('imagen').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('previewImage').src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+</body>
+</html>

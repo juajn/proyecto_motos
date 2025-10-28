@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Barra de navegación con búsqueda y filtro -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4 sticky-top py-2" style="margin-top: 70px;">
+  <div class="container">
+    <!-- Logo -->
+    <a class="navbar-brand fw-bold text-dark d-flex align-items-center" href="{{ url_for('usuario.dashboard') }}">
+      <i class="bi bi-shop-window me-2 fs-4 text-primary"></i> 
+      <span class="d-none d-md-block">Mi Tienda</span>
+    </a>
+    
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" 
+            data-bs-target="#navbarSearch" aria-controls="navbarSearch" 
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+
+    <!-- Búsqueda y filtros - Colapsable en móviles -->
+    <div class="collapse navbar-collapse order-lg-2" id="navbarSearch">
+      <form class="d-flex mt-3 mt-lg-0 ms-lg-auto gap-2 flex-column flex-lg-row" method="GET" action="{{ url_for('usuario.dashboard') }}">
+        <!-- Campo de búsqueda -->
+        <div class="position-relative flex-grow-1">
+          <input class="form-control rounded-pill shadow-sm ps-4 pe-5" type="search" name="q" 
+                 placeholder="Buscar productos..." value="{{ request.args.get('q', '') }}">
+          <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+        </div>
+
+        <!-- Filtro por categoría -->
+        <select name="categoria" class="form-select rounded-pill shadow-sm w-auto">
+          <option value="">Todas las categorías</option>
+          {% for cat in categorias %}
+            <option value="{{ cat }}" {% if request.args.get('categoria') == cat %}selected{% endif %}>
+              {{ cat }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm fw-medium" type="submit">
+          <i class="bi bi-funnel me-1"></i> Filtrar
+        </button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<!-- Contenido principal -->
+<div class="container py-4">
+  <!-- Header con bienvenida -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="bg-gradient-primary rounded-4 p-4 shadow-sm text-white">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h2 class="fw-bold mb-1">¡Bienvenido, {{ usuario.nombre.split(' ')[0] }}!</h2>
+            <p class="mb-0 opacity-75">Descubre nuestros productos exclusivos</p>
+          </div>
+          <i class="bi bi-stars fs-1 opacity-50 d-none d-md-block"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros activos -->
+  {% if request.args.get('q') or request.args.get('categoria') %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center bg-light rounded-3 p-3">
+        <span class="fw-medium me-2">Filtros aplicados:</span>
+        {% if request.args.get('q') %}
+          <span class="badge bg-primary rounded-pill me-2">
+            Búsqueda: "{{ request.args.get('q') }}"
+            <a href="{{ url_for('usuario.dashboard', categoria=request.args.get('categoria')) }}" class="text-white ms-1">
+              <i class="bi bi-x"></i>
+            </a>
+          </span>
+        {% endif %}
+        {% if request.args.get('categoria') %}
+          <span class="badge bg-secondary rounded-pill">
+            Categoría: {{ request.args.get('categoria') }}
+            <a href="{{ url_for('usuario.dashboard', q=request.args.get('q')) }}" class="text-white ms-1">
+              <i class="bi bi-x"></i>
+            </a>
+          </span>
+        {% endif %}
+        {% if request.args.get('q') or request.args.get('categoria') %}
+          <a href="{{ url_for('usuario.dashboard') }}" class="btn btn-sm btn-outline-danger ms-3">
+            <i class="bi bi-x-circle me-1"></i> Limpiar filtros
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Lista de productos -->
+  {% if productos %}
+  <div class="row g-4">
+    {% for producto in productos %}
+    <div class="col-sm-6 col-md-4 col-lg-3">
+      <!-- Tarjeta del producto -->
+      <div class="card h-100 border-0 shadow-sm rounded-4 product-card" 
+           data-bs-toggle="modal" data-bs-target="#productoModal{{ producto.id }}">
+        <div class="position-relative overflow-hidden rounded-top-4">
+          <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
+               class="card-img-top product-image" alt="{{ producto.nombre }}">
+          <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow">
+            ${{ producto.precio }}
+          </span>
+          {% if producto.stock == 0 %}
+            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+              <span class="badge bg-danger">Agotado</span>
+            </div>
+          {% endif %}
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-semibold text-truncate">{{ producto.nombre }}</h5>
+          <p class="card-text small text-muted flex-grow-1">{{ producto.descripcion[:80] }}...</p>
+          <div class="d-flex justify-content-between align-items-center mt-auto">
+            <small class="text-muted">{{ producto.categoria }}</small>
+            <small class="text-muted">{{ producto.stock }} disponibles</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal del producto -->
+    <div class="modal fade" id="productoModal{{ producto.id }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-dark text-white rounded-top-4">
+            <h5 class="modal-title d-flex align-items-center">
+              <i class="bi bi-box me-2"></i>{{ producto.nombre }}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body row g-4 p-4">
+            <!-- Imagen del producto -->
+            <div class="col-md-6 text-center">
+              <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
+                   class="img-fluid rounded-3 shadow" alt="{{ producto.nombre }}">
+            </div>
+            <!-- Información del producto -->
+            <div class="col-md-6">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h3 class="fw-bold text-primary">${{ producto.precio }}</h3>
+                <span class="badge bg-{{ 'success' if producto.stock > 0 else 'danger' }}">
+                  {{ producto.stock }} disponibles
+                </span>
+              </div>
+              
+              <p class="text-muted mb-3">{{ producto.descripcion }}</p>
+              
+              <div class="mb-4">
+                <h6 class="fw-semibold mb-2">Detalles del producto:</h6>
+                <ul class="list-unstyled">
+                  <li class="mb-1"><i class="bi bi-grid-1x2 text-primary me-2"></i> Categoría: {{ producto.categoria }}</li>
+                  <li class="mb-1"><i class="bi bi-upc-scan text-primary me-2"></i> SKU: {{ producto.id }}</li>
+                  <li><i class="bi bi-shield-check text-primary me-2"></i> Garantía: 6 meses</li>
+                </ul>
+              </div>
+
+              <!-- Formulario para añadir al carrito -->
+              {% if producto.stock > 0 %}
+              <form method="POST" action="{{ url_for('usuario.agregar_carrito', producto_id=producto.id) }}">
+                <div class="input-group mb-3">
+                  <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity(this)">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <input type="number" name="cantidad" min="1" max="{{ producto.stock }}" value="1" 
+                         class="form-control text-center quantity-input" required>
+                  <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity(this, {{ producto.stock }})">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                  <button type="submit" class="btn btn-primary fw-medium">
+                    <i class="bi bi-cart-plus me-1"></i> Añadir al carrito
+                  </button>
+                </div>
+              </form>
+              {% else %}
+                <div class="alert alert-warning mb-0">
+                  <i class="bi bi-exclamation-triangle me-2"></i> Producto temporalmente agotado
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="modal-footer bg-light rounded-bottom-4">
+            <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+              <i class="bi bi-arrow-left me-1"></i> Seguir explorando
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  
+  <!-- Paginación -->
+  {% if pagination and pagination.pages > 1 %}
+  <div class="row mt-5">
+    <div class="col-12">
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if pagination.has_prev %}
+            <li class="page-item">
+              <a class="page-link rounded-pill me-1" href="{{ url_for('usuario.dashboard', page=pagination.prev_num, q=request.args.get('q'), categoria=request.args.get('categoria')) }}">
+                <i class="bi bi-chevron-left"></i> Anterior
+              </a>
+            </li>
+          {% endif %}
+          
+          {% for page in pagination.iter_pages() %}
+            <li class="page-item {% if page == pagination.page %}active{% endif %}">
+              <a class="page-link rounded-circle mx-1" href="{{ url_for('usuario.dashboard', page=page, q=request.args.get('q'), categoria=request.args.get('categoria')) }}">
+                {{ page }}
+              </a>
+            </li>
+          {% endfor %}
+          
+          {% if pagination.has_next %}
+            <li class="page-item">
+              <a class="page-link rounded-pill ms-1" href="{{ url_for('usuario.dashboard', page=pagination.next_num, q=request.args.get('q'), categoria=request.args.get('categoria')) }}">
+                Siguiente <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+  {% endif %}
+  
+  {% else %}
+  <div class="row">
+    <div class="col-12">
+      <div class="text-center py-5">
+        <i class="bi bi-search display-1 text-muted mb-3"></i>
+        <h4 class="text-muted mb-3">No se encontraron productos</h4>
+        <p class="text-muted mb-4">Intenta ajustar tus filtros de búsqueda o explorar otras categorías</p>
+        <a href="{{ url_for('usuario.dashboard') }}" class="btn btn-primary rounded-pill">
+          <i class="bi bi-arrow-repeat me-1"></i> Ver todos los productos
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Estilos adicionales -->
+<style>
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+  }
+  
+  .product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15) !important;
+  }
+  
+  .product-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .product-card:hover .product-image {
+    transform: scale(1.05);
+  }
+  
+  .quantity-input {
+    max-width: 70px;
+  }
+  
+  .rounded-top-4 {
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+  }
+  
+  .rounded-bottom-4 {
+    border-bottom-left-radius: 1rem !important;
+    border-bottom-right-radius: 1rem !important;
+  }
+  
+  .page-link.rounded-circle {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+  }
+  .container-fluid, .content-wrapper, main {
+  position: relative;
+  z-index: 1;
+}
+
+
+.navbar, .sidebar, .offcanvas {
+  z-index: 1040; 
+}
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+  z-index: 1030;
+}
+
+  
+  /* Ajustes para la barra de navegación en móviles */
+  @media (max-width: 991.98px) {
+    .navbar .container {
+      flex-wrap: nowrap;
+    }
+    .navbar-brand {
+      margin-right: 0;
+    }
+    
+    .navbar-toggler {
+      order: 2;
+      margin-left: 0.5rem;
+    }
+    
+    .order-lg-3 {
+      order: 3;
+    }
+    
+    .order-lg-2 {
+      order: 4;
+      width: 100%;
+    }
+    
+    #navbarSearch {
+      margin-top: 1rem;
+    }
+  }
+</style>
+
+<!-- Scripts adicionales -->
+<script>
+  // Funciones para incrementar/decrementar cantidad
+  function incrementQuantity(button, max) {
+    const input = button.parentElement.querySelector('.quantity-input');
+    if (parseInt(input.value) < max) {
+      input.value = parseInt(input.value) + 1;
+    }
+  }
+  
+  function decrementQuantity(button) {
+    const input = button.parentElement.querySelector('.quantity-input');
+    if (parseInt(input.value) > 1) {
+      input.value = parseInt(input.value) - 1;
+    }
+  }
+  
+  // Inicializar tooltips
+  document.addEventListener('DOMContentLoaded', function() {
+    const productCards = document.querySelectorAll('.product-card');
+    productCards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.querySelector('.product-image').style.transform = 'scale(1.05)';
+      });
+      card.addEventListener('mouseleave', function() {
+        this.querySelector('.product-image').style.transform = 'scale(1)';
+      });
+    });
+  });
+</script>
+
+{% endblock %}

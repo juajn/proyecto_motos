@@ -1,0 +1,12 @@
+services:
+  web:
+    image: python:3.13-alpine
+    build: 
+      context: . #https://github.com/juajn/proyecto_motos.git
+      dockerfile: Dockerfile
+    ports:
+      - "5050:5050"
+    volumes:
+      - .:/app
+    environment:
+        - APP_NAME=$APP_NAME

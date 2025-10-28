@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header mejorado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 fw-bold text-gray-800 mb-1">
+                <i class="fas fa-users fa-sm me-2 text-primary"></i>Gestión de Usuarios
+            </h2>
+        </div>
+        <button class="btn btn-primary rounded-pill shadow-sm px-4" data-bs-toggle="collapse" data-bs-target="#formNuevoUsuario">
+            <i class="fas fa-plus me-2"></i> Nuevo Usuario
+        </button>
+    </div>
+
+    <!-- Formulario nuevo usuario - Mejorado -->
+    <div id="formNuevoUsuario" class="collapse mb-5">
+        <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Registrar Nuevo Usuario</h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('admin.crear_usuario') }}" method="POST" enctype="multipart/form-data" id="userForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label fw-semibold">Nombre completo <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" id="nombre" class="form-control shadow-sm" placeholder="Ingrese nombre completo" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="correo" class="form-label fw-semibold">Correo electrónico <span class="text-danger">*</span></label>
+                            <input type="email" name="correo" id="correo" class="form-control shadow-sm" placeholder="ejemplo@dominio.com" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="contraseña" class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" name="contraseña" id="contraseña" class="form-control shadow-sm" placeholder="Mínimo 8 caracteres" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16">
+  <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+  <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+</svg>
+                                </button>
+                            </div>
+                            <div class="form-text">La contraseña debe tener al menos 8 caracteres</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="rol" class="form-label fw-semibold">Rol de usuario <span class="text-danger">*</span></label>
+                            <select name="rol" id="rol" class="form-select shadow-sm" required>
+                                <option value="">Seleccione un rol</option>
+                                <option value="admin">Administrador</option>
+                                <option value="mecanico">Mecánico</option>
+                                <option value="usuario">Usuario estándar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="imagen" class="form-label fw-semibold">Foto de perfil</label>
+                            <input type="file" name="imagen" id="imagen" class="form-control shadow-sm" accept="image/*" onchange="previewImage(this)">
+                            <div class="form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 2MB</div>
+                            <div class="mt-2" id="imagePreview" style="display:none;">
+                                <img id="preview" class="rounded-circle border" width="80" height="80" alt="Vista previa">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#formNuevoUsuario">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                            <i class="fas fa-save me-2"></i> Registrar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de estadísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100 bg-primary border-0 bg-opacity-10 shadow-sm  mb-4 rounded-3">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Usuarios</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ usuarios|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100 bg-success bg-opacity-10 border-0 shadow-sm mb-4 rounded-3">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Administradores</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ usuarios|selectattr('rol', 'equalto', 'admin')|list|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-warning bg-opacity-10 border-0 shadow-sm h-100 py-2 rounded-3">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Mecánicos</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ usuarios|selectattr('rol', 'equalto', 'mecanico')|list|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tools fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-primary-light bg-opacity-10 border-0 shadow-sm h-100 py-2 rounded-3">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Usuarios Estándar</div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ usuarios|selectattr('rol', 'equalto', 'usuario')|list|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de usuarios - Mejorada -->
+    <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-gray-800"><i class="fas fa-list me-2 text-primary"></i> Lista de Usuarios</h5>
+            <div class="d-flex">
+                <input type="text" id="searchInput" class="form-control form-control-sm me-2 shadow-sm" placeholder="Buscar usuario...">
+                <select id="roleFilter" class="form-select form-select-sm shadow-sm">
+                    <option value="">Todos los roles</option>
+                    <option value="admin">Administradores</option>
+                    <option value="mecanico">Mecánicos</option>
+                    <option value="usuario">Usuarios</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0" id="usersTable">
+                    <thead class="table-light fw-semibold">
+                        <tr>
+                            <th class="ps-4">Usuario</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                            
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr class="user-row" data-role="{{ usuario.rol }}">
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    {% if usuario.imagen %}
+    <img src="{{ url_for('static', filename='uploads/' + usuario.imagen) }}" 
+         width="40" height="40" class="rounded-circle me-3 border shadow-sm" alt="Foto de perfil">
+{% else %}
+    <img src="{{ url_for('static', filename='uploads/default.png') }}" 
+         width="40" height="40" class="rounded-circle me-3 border shadow-sm" alt="Usuario predeterminado">
+{% endif %}
+
+                                    <div>
+                                        <div class="fw-semibold">{{ usuario.nombre }}</div>
+                                        <small class="text-muted">ID: {{ usuario.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ usuario.correo }}</td>
+                            <td>
+                                {% if usuario.rol == "admin" %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">Administrador</span>
+                                {% elif usuario.rol == "mecanico" %}
+                                    <span class="badge bg-warning bg-opacity-10 text-dark px-2 py-1 rounded-pill">Mecánico</span>
+                                {% else %}
+                                    <span class="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded-pill">Usuario</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin.editar_usuario', id=usuario.id) }}" class="btn btn-sm btn-outline-primary rounded-pill me-1">
+                                        <i class="fas fa-edit me-1"></i> Editar
+                                    </a>
+                                    <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST" class="d-inline"
+                                          onsubmit="return confirm('¿Está seguro de que desea eliminar a {{ usuario.nombre }}? Esta acción no se puede deshacer.');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                            <i class="fas fa-trash-alt me-1"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">Mostrando <span class="fw-semibold">{{ usuarios|length }}</span> usuarios registrados</div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08) !important;
+    }
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    .user-row {
+        transition: background-color 0.15s ease;
+    }
+    .user-row:hover {
+        background-color: #f8f9fa !important;
+    }
+    .badge {
+        font-size: 0.75rem;
+    }
+
+.container-fluid, .content-wrapper, main {
+  position: relative;
+  z-index: 1;
+}
+
+
+.navbar, .sidebar, .offcanvas {
+  z-index: 1040; 
+}
+.offcanvas-backdrop.show {
+  opacity: 0.5;
+  z-index: 1030;
+}
+
+</style>
+
+<script>
+    // Funcionalidad para mostrar/ocultar contraseña
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('contraseña');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+
+    // Vista previa de imagen seleccionada
+    function previewImage(input) {
+        const preview = document.getElementById('preview');
+        const previewContainer = document.getElementById('imagePreview');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    }
+
+    // Filtrado de tabla
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const roleFilter = document.getElementById('roleFilter');
+        const tableRows = document.querySelectorAll('.user-row');
+        
+        function filterTable() {
+            const searchText = searchInput.value.toLowerCase();
+            const selectedRole = roleFilter.value;
+            
+            tableRows.forEach(row => {
+                const userName = row.querySelector('.fw-semibold').textContent.toLowerCase();
+                const userRole = row.getAttribute('data-role');
+                const matchesSearch = userName.includes(searchText);
+                const matchesRole = selectedRole === '' || userRole === selectedRole;
+                
+                row.style.display = (matchesSearch && matchesRole) ? '' : 'none';
+            });
+        }
+        
+        searchInput.addEventListener('input', filterTable);
+        roleFilter.addEventListener('change', filterTable);
+    });
+</script>
+{% endblock %}

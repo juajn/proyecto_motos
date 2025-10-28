@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %} 🛒 Tienda Online {% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+    <!-- 🔥 Ofertas Destacadas -->
+    {% if ofertas %}
+    <section class="mb-5">
+        <h2 class="fw-bold text-center mb-4 text-primary">🔥 Ofertas Destacadas</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for oferta in ofertas %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="position-relative">
+                        <img src="{{ url_for('static', filename='uploads/' + oferta.foto) if oferta.foto else url_for('static', filename='img/no-image.png') }}" 
+                             class="card-img-top" style="height: 220px; object-fit: cover;" alt="{{ oferta.nombre }}">
+                        <span class="discount-badge">-30%</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">{{ oferta.nombre }}</h5>
+                        <p class="text-muted small">{{ oferta.descripcion[:70] }}...</p>
+                        <p class="mb-1 text-decoration-line-through text-muted">${{ oferta.precio + 100 }}</p>
+                        <p class="fs-4 fw-bold text-danger">${{ oferta.precio }}</p>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        {% if current_user.is_authenticated and current_user.rol == 'usuario' %}
+                            <form action="{{ url_for('usuario.agregar_carrito', producto_id=oferta.id) }}" method="POST">
+                                <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold">
+                                    <i class="fas fa-cart-plus me-1"></i> Comprar
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark w-100 rounded-pill fw-bold">Inicia sesión</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 🔍 Buscador -->
+    <section class="mb-5">
+        <form method="GET" class="search-box shadow-sm rounded-pill p-3 d-flex align-items-center bg-white">
+            <input type="text" name="q" value="{{ q }}" 
+                   class="form-control border-0 rounded-pill ps-4 fs-5" 
+                   placeholder="🔍 Buscar productos...">
+            <select name="categoria" class="form-select border-0 rounded-pill mx-3 fs-5" style="max-width: 250px;">
+                <option value="">Todas</option>
+                {% for cat in categorias %}
+                    <option value="{{ cat }}" {% if categoria_id == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                <i class="fas fa-search me-2"></i> Filtrar
+            </button>
+        </form>
+    </section>
+
+    <!-- 🗂️ Categorías -->
+    {% if categorias %}
+    <section class="mb-5 text-center">
+        <h3 class="fw-bold mb-4">🌟 Explora por Categorías</h3>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            {% for cat in categorias %}
+            <a href="{{ url_for('auth.principal', categoria=cat) }}" 
+               class="badge bg-light text-dark border rounded-pill px-4 py-3 fs-6 shadow-sm category-chip">
+                <i class="fas fa-tag me-2 text-primary"></i>{{ cat }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 📦 Productos -->
+    <section id="productos">
+        <h2 class="fw-bold text-center mb-4 text-dark">📦 Nuestros Productos</h2>
+        {% if productos %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for producto in productos %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                    <img src="{{ url_for('static', filename='uploads/' + producto.foto) if producto.foto else url_for('static', filename='img/no-image.png') }}" 
+                         class="card-img-top" style="height: 220px; object-fit: cover;" alt="{{ producto.nombre }}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold text-dark">{{ producto.nombre }}</h5>
+                        <p class="text-muted small">{{ producto.descripcion[:90] }}...</p>
+                        <p class="fs-4 fw-bold text-primary">${{ producto.precio }}</p>
+                    </div>
+                    <div class="card-footer bg-white border-0 text-center">
+                        {% if current_user.is_authenticated and current_user.rol == 'usuario' %}
+                            <form action="{{ url_for('usuario.agregar_carrito', producto_id=producto.id) }}" method="POST">
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">
+                                    <i class="fas fa-cart-plus me-1"></i> Agregar al carrito
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark w-100 rounded-pill fw-bold">
+                                <i class="fas fa-sign-in-alt me-1"></i> Inicia sesión
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ⏩ Paginación -->
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link rounded-pill px-4" href="{{ url_for('auth.principal', page=pagination.prev_num, q=q, categoria=categoria_id) }}">⬅️ Anterior</a>
+                    </li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link rounded-pill px-4">Página {{ pagination.page }} de {{ pagination.pages }}</span></li>
+                {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link rounded-pill px-4" href="{{ url_for('auth.principal', page=pagination.next_num, q=q, categoria=categoria_id) }}">Siguiente ➡️</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% else %}
+        <div class="alert alert-info text-center shadow-sm rounded-3">
+            <i class="fas fa-info-circle me-2"></i> No se encontraron productos.
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<!-- 🌈 Estilos -->
+<style>
+body { background: #f8f9fa; font-family: 'Poppins', sans-serif; color: #212529; }
+
+.discount-badge { 
+  position: absolute; 
+  top: 10px; left: 10px; 
+  background: #dc3545; 
+  color: white; 
+  padding: 6px 14px; 
+  border-radius: 20px; 
+  font-size: 0.9rem; 
+  font-weight: bold; 
+}
+
+.card:hover { transform: translateY(-6px); transition: 0.3s; }
+
+.category-chip { transition: all 0.3s ease; }
+.category-chip:hover { background: #0d6efd !important; color:white !important; }
+</style>
+{% endblock %}
