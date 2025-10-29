@@ -137,8 +137,9 @@
           <div class="modal-body row g-4 p-4">
             <!-- Imagen del producto -->
             <div class="col-md-6 text-center">
-              <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) }}" 
-                   class="img-fluid rounded-3 shadow" alt="{{ producto.nombre }}">
+             <img src="{{ url_for('static', filename='uploads/' ~ producto.foto) if producto.foto else url_for('static', filename='img/placeholder.jpg') }}" 
+               class="card-img-top product-image" alt="{{ producto.nombre }}"
+               onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
             </div>
             <!-- Información del producto -->
             <div class="col-md-6">
